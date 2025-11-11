@@ -3,17 +3,24 @@ package com.example.mattapp_proyect.ui.screen
 import android.util.Patterns
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,7 +34,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.mattapp_proyect.ui.Screen
 import com.example.mattapp_proyect.viewModel.UserViewModel
+import androidx.compose.material.icons.Icons
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
 
@@ -38,6 +47,8 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
     var contraseña by remember { mutableStateOf("") }
     var confirmarContraseña by remember { mutableStateOf("") }
 
+    var rolSeleccionado by remember { mutableStateOf("Alumno") }
+    val rolesOptions = listOf("Alumno", "Maestro")
 
     // --- 2. LÓGICA DE VALIDACIÓN (IL2.1) ---
     // Lógica de control que se ejecuta cada vez que un estado cambia
@@ -51,7 +62,22 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
 
 
     // --- 3. INTERFAZ DE USUARIO (IL2.1) ---
-    Scaffold { paddingValues ->
+    Scaffold (
+        // Añadimos la barra superior con el botón de "Volver"
+        topBar = {
+            TopAppBar(
+                title = { Text("Crear Cuenta") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver"
+                        )
+                    }
+                }
+            )
+        }
+    ){ paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -138,13 +164,40 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
                     style = MaterialTheme.typography.bodySmall
                 )
             }
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Text("Soy:", style = MaterialTheme.typography.bodyLarge)
+            Row(Modifier.fillMaxWidth()) {
+                rolesOptions.forEach { text ->
+                    Row(
+                        Modifier
+                            .selectable(
+                                selected = (text == rolSeleccionado),
+                                onClick = { rolSeleccionado = text }
+                            )
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        RadioButton(
+                            selected = (text == rolSeleccionado),
+                            onClick = null
+                        )
+                        Text(
+                            text = text,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(start = 8.dp)
+                                .align(Alignment.CenterVertically)
+                        )
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(32.dp))
 
             // --- 4. BOTÓN FUNCIONAL VALIDADO (IL2.1) ---
             Button(
                 onClick = {
-                    userViewModel.registraUsuario(nombre, correo, contraseña)
+                    userViewModel.registraUsuario(nombre, correo, contraseña,rolSeleccionado)
                     //llamar al ViewModel para registrar al usuario
                     // Por ahora, solo navegamos a Home (simulado)
                     navController.navigate(Screen.Login.route) {

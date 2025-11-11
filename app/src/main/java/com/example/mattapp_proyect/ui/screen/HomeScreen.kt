@@ -17,9 +17,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.mattapp_proyect.ui.Screen
+import com.example.mattapp_proyect.viewModel.UserViewModel
 
 @Composable
-fun HomeScreen(navController: NavController) {
+fun HomeScreen(navController: NavController,
+               userViewModel: UserViewModel) {
+
+    val currentUser = userViewModel.loggedInUser.value
+
     Scaffold { paddingValues ->
         Column(
             modifier = Modifier
@@ -29,7 +34,7 @@ fun HomeScreen(navController: NavController) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("¡Bienvenido!", style = MaterialTheme.typography.headlineLarge)
+            Text("¡Bienvenido, ${currentUser?.nombre ?: ""}!", style = MaterialTheme.typography.headlineLarge)
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -51,8 +56,19 @@ fun HomeScreen(navController: NavController) {
                 Text("Ver Historial de Puntuaciones")
             }
 
-            // --- BOTÓN NUEVO AÑADIDO ---
+            if (currentUser?.rol == "Maestro") {
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { navController.navigate(Screen.Upload.route) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Subir Archivo")
+                }
+            }
+
+
             Spacer(modifier = Modifier.height(16.dp))
+
             Button(
                 onClick = { navController.navigate(Screen.Profile.route) },
                 modifier = Modifier.fillMaxWidth()

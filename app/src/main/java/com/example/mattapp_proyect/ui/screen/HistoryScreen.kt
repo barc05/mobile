@@ -26,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.mattapp_proyect.viewModel.UserViewModel
-import com.example.mattapp_proyect.data.model.HistorialItem
 
 
 

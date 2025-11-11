@@ -6,10 +6,8 @@ import androidx.room.PrimaryKey
 
 data class User (
     val nombre: String,
-
     val correo: String,
-
     val contraseña: String,
-
+    val rol: String,
     val fotoUri: String? = null
 )

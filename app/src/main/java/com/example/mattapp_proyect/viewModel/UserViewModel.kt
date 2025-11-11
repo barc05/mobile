@@ -19,12 +19,14 @@ class UserViewModel() : ViewModel() {
         User(
             nombre = "Mateo",
             correo = "mateo@test.com",
-            contraseña = "123456"
+            contraseña = "123456",
+            rol = "Maestro"
         ),
         User(
             nombre = "Juan",
             correo = "juan@test.com",
-            contraseña = "123456"
+            contraseña = "123456",
+            rol = "Alumno"
         )
     )
 
@@ -32,11 +34,10 @@ class UserViewModel() : ViewModel() {
     val loggedInUser = mutableStateOf<User?>(null)
 
     // Función llamada desde la UI (RegisterScreen)
-    fun registraUsuario(nombre: String, correo: String, contraseña: String) {
-        // Ya no es 'suspend' ni usa 'Dispatchers.IO'
-        val newUser = User(nombre = nombre, correo = correo, contraseña = contraseña)
+    fun registraUsuario(nombre: String, correo: String, contraseña: String, rol: String) {
+        // 2. Pasa el 'role' al crear el usuario
+        val newUser = User(nombre = nombre, correo = correo, contraseña = contraseña, rol = rol)
         simulatedUsers.add(newUser)
-        // (En una simulación, no manejamos errores de duplicados)
     }
     fun loginUsuario(correo: String, contraseña: String): User? {
         // Busca en la lista simulada
