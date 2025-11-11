@@ -9,6 +9,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 // Paleta Modo Oscuro con los nuevos colores
@@ -55,7 +56,7 @@ private val LightColorScheme = lightColorScheme(
     onError = onErrorLight,
     errorContainer = errorContainerLight,
     onErrorContainer = onErrorContainerLight,
-    background = backgroundLight,
+    background = Color(0xFFFFFFFF),
     onBackground = onBackgroundLight,
     surface = surfaceLight,
     onSurface = onSurfaceLight,
@@ -68,7 +69,7 @@ private val LightColorScheme = lightColorScheme(
 fun MattApp_ProyectTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
