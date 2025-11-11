@@ -59,7 +59,10 @@ fun AppNavigation(userViewModel: UserViewModel) {
             Text("Pantalla de Cuestionario (TODO)")
         }
         composable(route = Screen.History.route) {
-            HistoryScreen(navController = navController)
+            HistoryScreen(
+                navController = navController,
+                userViewModel = userViewModel
+            )
         }
 
     }
