@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.mattapp_proyect.ui.Screen
 import com.example.mattapp_proyect.viewModel.UserViewModel
-import kotlinx.coroutines.launch
+
 
 @Composable
 fun LoginScreen(
@@ -41,7 +41,7 @@ fun LoginScreen(
     var errorMensaje by remember { mutableStateOf<String?>(null) }
 
     // Para lanzar la corutina del login
-    val scope = rememberCoroutineScope()
+
 
     // --- 3. INTERFAZ DE USUARIO (IL2.1) ---
     Scaffold { paddingValues ->
@@ -95,21 +95,16 @@ fun LoginScreen(
             // --- 4. BOTÓN DE LOGIN (Lógica IL2.2) ---
             Button(
                 onClick = {
-                    scope.launch {
-                        // 1. Llama a la función suspendida
-                        val usuarioLogueado = userViewModel.loginUsuario(correo, contraseña)
+                    val usuarioLogueado = userViewModel.loginUsuario(correo, contraseña)
 
-                        if (usuarioLogueado != null) {
-                            // 2. ¡Éxito! Guarda el usuario en el ViewModel
-                            userViewModel.loggedInUser.value = usuarioLogueado
-
-                            // 3. Navega a Home
-                            navController.navigate(Screen.Home.route) {
-                                popUpTo(Screen.Login.route) { inclusive = true }
-                            }
-                        } else {
-                            errorMensaje = "Correo o contraseña incorrectos"
+                    if (usuarioLogueado != null) {
+                        // 2. ¡Éxito! (El VM ya guarda el estado)
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
                         }
+                    } else {
+                        // Fracaso
+                        errorMensaje = "Correo o contraseña incorrectos"
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
