@@ -1,6 +1,6 @@
 package com.example.mattapp_proyect.ui.screen
 
-// --- IMPORTS NECESARIOS ---
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,10 +28,6 @@ import androidx.navigation.NavController
 import com.example.mattapp_proyect.viewModel.UserViewModel
 import com.example.mattapp_proyect.data.model.HistorialItem
 
-
-// -----------------------------------------------------------
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(
@@ -51,9 +47,25 @@ fun HistoryScreen(
 
 
     // --- 2. LÓGICA DE FILTRADO (Funciona igual que antes) ---
+
     val filteredList = remember(searchQuery, activeFilter, listaDeHistorial) {
-        // ... (esta lógica de 'remember' no cambia en absoluto)
-        // (el 'when' y el '.filter' funcionan igual)
+        // Primero, aplica la búsqueda (del TextField)
+        val searchResults = if (searchQuery.isEmpty()) {
+            listaDeHistorial
+        } else {
+            listaDeHistorial.filter {
+                it.materia.contains(searchQuery, ignoreCase = true) ||
+                        it.tipoArchivo.contains(searchQuery, ignoreCase = true)
+            }
+        }
+
+        // Segundo, aplica el filtro (del DropdownMenu)
+        when (activeFilter) {
+            "Fecha" -> searchResults.sortedByDescending { it.fecha }
+            "Materia" -> searchResults.sortedBy { it.materia }
+            "Tipo" -> searchResults.sortedBy { it.tipoArchivo }
+            else -> searchResults // "Ninguno"
+        }
     }
 
 
