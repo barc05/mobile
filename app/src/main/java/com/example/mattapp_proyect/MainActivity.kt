@@ -43,7 +43,9 @@ class MainActivity : ComponentActivity() {
                 dao.insertUser(user1)
                 dao.insertUser(user2)
             } catch (e: Exception) {
-
+                // Si ya existen, la base de datos dará un error
+                // (porque 'correo' es PrimaryKey y usamos OnConflictStrategy.ABORT)
+                // El 'catch' ignora el error y evita que la app se cierre.
             }
         }
 
