@@ -90,41 +90,11 @@ fun UploadScreen(navController: NavController){
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // --- PERMISOS ---
-            Text("Permisos:", style = MaterialTheme.typography.bodyLarge)
-            Row(Modifier.fillMaxWidth()) {
-                permisosOptions.forEach { text ->
-                    Row(
-                        Modifier
-                            .selectable(
-                                selected = (text == permisoSeleccionado),
-                                onClick = { permisoSeleccionado = text }
-                            )
-                            .padding(horizontal = 16.dp)
-                    ) {
-                        RadioButton(
-                            selected = (text == permisoSeleccionado),
-                            onClick = null // El clic se maneja en el 'selectable'
-                        )
-                        Text(
-                            text = text,
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(start = 8.dp)
-                                .align(Alignment.CenterVertically)
-                        )
-                    }
-                }
-            }
-
             Spacer(modifier = Modifier.weight(1f)) // Empuja el botón al fondo
 
             // --- BOTÓN "SUBIR" ---
             Button(
                 onClick = {
-                    // TODO: Añadir la lógica de subida real aquí
-                    // (ej. llamar a un viewModel.uploadFile(fileUri, nombre, materia, permiso))
-
-                    // De momento, solo volvemos a la pantalla anterior
                     navController.navigateUp()
                 },
                 modifier = Modifier.fillMaxWidth(),

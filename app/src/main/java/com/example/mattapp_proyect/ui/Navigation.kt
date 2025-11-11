@@ -11,9 +11,8 @@ import com.example.mattapp_proyect.ui.screen.HomeScreen
 import com.example.mattapp_proyect.ui.screen.ProfileScreen
 import androidx.compose.material3.Text
 import com.example.mattapp_proyect.ui.screen.HistoryScreen
-import com.example.mattapp_proyect.ui.screen.HistoryScreen
 import com.example.mattapp_proyect.ui.screen.UploadScreen
-
+import com.example.mattapp_proyect.ui.screen.ArchivosScreen
 
 sealed class Screen(val route: String) {
     object Login : Screen("login_screen")
@@ -22,7 +21,7 @@ sealed class Screen(val route: String) {
     object Quiz : Screen("quiz_screen")
     object History : Screen("history_screen")
 
-
+    object Archivos : Screen("archivos_screen")
 
     object Upload : Screen("upload_screen")
     object Profile : Screen("profile_screen") // NUEVA RUTA
@@ -75,6 +74,13 @@ fun AppNavigation(userViewModel: UserViewModel) {
 
         composable(route = Screen.Upload.route) {
             UploadScreen(navController = navController)
+        }
+
+        composable(route = Screen.Archivos.route) {
+            ArchivosScreen(
+                navController = navController,
+                userViewModel = userViewModel
+            )
         }
 
     }

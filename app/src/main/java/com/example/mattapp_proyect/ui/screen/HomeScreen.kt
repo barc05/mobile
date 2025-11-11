@@ -56,6 +56,14 @@ fun HomeScreen(navController: NavController,
                 Text("Ver Historial de Puntuaciones")
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = { navController.navigate(Screen.Archivos.route) }, // <-- NUEVA NAVEGACIÓN
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Ver Mis Archivos")
+            }
+
             if (currentUser?.rol == "Maestro") {
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(

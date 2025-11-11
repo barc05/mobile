@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.example.mattapp_proyect.data.model.HistorialItem
+import com.example.mattapp_proyect.data.model.UploadedFile
 
 /**
  * (IL2.3) Este es el ViewModel que maneja la lógica de
@@ -84,6 +85,18 @@ class UserViewModel() : ViewModel() {
         HistorialItem(4, "Matemáticas", "Documento", "2025-11-07", 100)
     )
 
+    private val simulatedFiles = mutableListOf(
+        UploadedFile(
+            id = 1,
+            userEmail = "mateo@test.com", // Pertenece a Mateo (el Maestro)
+            nombre = "Guía de Álgebra (Predefinida)",
+            materia = "Matemáticas",
+            // Esta es la clave: la URI es solo un texto. No apunta a ningún
+            // archivo real, así evitamos usar res/raw.
+            fileUri = "preloaded://guia_algebra_01"
+        )
+    )
+
     // --- FUNCIÓN NUEVA SIMULADA ---
 
     /**
@@ -100,5 +113,49 @@ class UserViewModel() : ViewModel() {
             "juan@test.com" -> historialUsuario2
             else -> emptyList() // Si es otro usuario, no muestra nada
         }
+    }
+
+    fun getUploadedFilesForUser(): List<UploadedFile> {
+        // 1. Obtiene el usuario actual y su rol
+        val currentUser = loggedInUser.value
+        val userRol = currentUser?.rol
+
+        // Si no hay usuario, devuelve lista vacía
+        if (currentUser == null) {
+            return emptyList()
+        }
+
+        // 2. Comprueba el ROL del usuario
+        if (userRol == "Alumno") {
+            // SI ES ALUMNO:
+            // a. Encuentra los correos de TODOS los maestros
+            val maestroEmails = simulatedUsers
+                .filter { it.rol == "Maestro" }
+                .map { it.correo }
+
+            // b. Devuelve todos los archivos cuyo 'userEmail' esté en la lista de maestros
+            return simulatedFiles.filter { it.userEmail in maestroEmails }
+
+        } else {
+            // SI ES MAESTRO (o cualquier otro rol):
+            // Devuelve solo los archivos que le pertenecen (lógica original)
+            return simulatedFiles.filter { it.userEmail == currentUser.correo }
+        }
+    }
+
+    fun addUploadedFile(nombre: String, materia: String, uri: String) {
+        val email = loggedInUser.value?.correo ?: return
+        // Genera un ID nuevo (basado en el Proyecto 3)
+        val newId = (simulatedFiles.maxByOrNull { it.id }?.id ?: 0) + 1
+
+        simulatedFiles.add(
+            UploadedFile(
+                id = newId,
+                userEmail = email,
+                nombre = nombre,
+                materia = materia,
+                fileUri = uri
+            )
+        )
     }
 }
