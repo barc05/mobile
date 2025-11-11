@@ -93,8 +93,8 @@ class UserViewModel(private val dao: UserDao) : ViewModel() {
 
         // Compara el email y devuelve la lista correspondiente
         return when (emailUsuario) {
-            "usuario1@test.com" -> historialUsuario1
-            "usuario2@test.com" -> historialUsuario2
+            "mateo@test.com" -> historialUsuario1
+            "juan@test.com" -> historialUsuario2
             else -> emptyList() // Si es otro usuario, no muestra nada
         }
     }

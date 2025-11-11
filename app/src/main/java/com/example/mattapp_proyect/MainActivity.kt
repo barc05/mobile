@@ -26,15 +26,15 @@ class MainActivity : ComponentActivity() {
         val dao = AppDatabase.getDatabase(application).userDao()
 
         lifecycleScope.launch(Dispatchers.IO) {
-            // Define tus usuarios de prueba
+            // usuarios de prueba
             val user1 = User(
-                nombre = "Sara",
-                correo = "sara1@test.com",
+                nombre = "Mateo",
+                correo = "mateo@test.com",
                 contraseña = "123456" // Ponles una contraseña
             )
             val user2 = User(
-                nombre = "Luis",
-                correo = "luis2@test.com",
+                nombre = "Juan",
+                correo = "juan@test.com",
                 contraseña = "123456"
             )
 

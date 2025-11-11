@@ -28,6 +28,8 @@ import androidx.navigation.NavController
 import com.example.mattapp_proyect.viewModel.UserViewModel
 import com.example.mattapp_proyect.data.model.HistorialItem
 
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(
