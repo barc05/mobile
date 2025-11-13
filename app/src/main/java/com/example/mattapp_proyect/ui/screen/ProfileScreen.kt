@@ -6,11 +6,17 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,6 +28,9 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.mattapp_proyect.ui.Screen
 import com.example.mattapp_proyect.viewModel.UserViewModel
 
+
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(navController: NavController, userViewModel: UserViewModel) {
 
@@ -35,7 +44,23 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel) {
         imageUri = uri
     }
 
-    Scaffold { paddingValues ->
+    Scaffold (
+        // --- AÑADE ESTA SECCIÓN 'topBar' ---
+        topBar = {
+            TopAppBar(
+                title = { Text("Mi Perfil") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver"
+                        )
+                    }
+                }
+            )
+        }
+        // --- FIN DE LA SECCIÓN ---
+    ){ paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -45,8 +70,8 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel) {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            Text("Mi Perfil", style = MaterialTheme.typography.headlineLarge)
-            Spacer(modifier = Modifier.height(16.dp))
+            //Text("Mi Perfil", style = MaterialTheme.typography.headlineLarge)
+            //Spacer(modifier = Modifier.height(16.dp))
 
             // --- Lógica de imagen (de FileUploadScreen.kt) ---
             val painter = rememberAsyncImagePainter(
