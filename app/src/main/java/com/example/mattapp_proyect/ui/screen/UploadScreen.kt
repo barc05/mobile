@@ -13,10 +13,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.mattapp_proyect.viewModel.UserViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UploadScreen(navController: NavController){
+fun UploadScreen(
+    navController: NavController,
+    userViewModel: UserViewModel) {
     var fileUri by remember { mutableStateOf<Uri?>(null) }
     var nombre by remember { mutableStateOf("") }
     var materia by remember { mutableStateOf("") }
@@ -95,6 +98,13 @@ fun UploadScreen(navController: NavController){
             // --- BOTÓN "SUBIR" ---
             Button(
                 onClick = {
+                    fileUri.let { uri ->
+                        userViewModel.addUploadedFile(
+                            nombre = nombre,
+                            materia = materia,
+                            uri = uri.toString()
+                        )
+                    }
                     navController.navigateUp()
                 },
                 modifier = Modifier.fillMaxWidth(),

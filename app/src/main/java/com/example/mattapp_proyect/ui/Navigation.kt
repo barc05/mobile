@@ -73,7 +73,10 @@ fun AppNavigation(userViewModel: UserViewModel) {
         }
 
         composable(route = Screen.Upload.route) {
-            UploadScreen(navController = navController)
+            UploadScreen(
+                navController = navController,
+                userViewModel = userViewModel
+                )
         }
 
         composable(route = Screen.Archivos.route) {
