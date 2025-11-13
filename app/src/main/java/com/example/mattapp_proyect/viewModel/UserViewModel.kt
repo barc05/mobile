@@ -31,6 +31,31 @@ class UserViewModel() : ViewModel() {
         )
     )
 
+    private val simulatedFiles = mutableListOf(
+        UploadedFile(
+            id = 1,
+            userEmail = "mateo@test.com", // Pertenece a Mateo (el Maestro)
+            nombre = "Guía de Álgebra (Predefinida)",
+            materia = "Matemáticas",
+            // Esta es la clave: la URI es solo un texto. No apunta a ningún
+            // archivo real, así evitamos usar res/raw.
+            fileUri = "preloaded://guia_algebra_01"
+        )
+    )
+
+    private val historialUsuario1 = listOf(
+        HistorialItem(1, "Matemáticas", "Quiz", "2025-11-10", 85),
+        HistorialItem(2, "Historia", "Quiz", "2025-11-08", 70)
+    )
+
+    // Datos para el Usuario 2
+    private val historialUsuario2 = listOf(
+        HistorialItem(3, "Ciencias", "Documento", "2025-11-09", 90),
+        HistorialItem(4, "Matemáticas", "Documento", "2025-11-07", 100)
+    )
+
+
+
     //usuario logueado
     val loggedInUser = mutableStateOf<User?>(null)
 
@@ -71,32 +96,6 @@ class UserViewModel() : ViewModel() {
         loggedInUser.value = null
     }
 
-    // --- DATOS SIMULADOS  ---
-
-    // Datos para el Usuario 1
-    private val historialUsuario1 = listOf(
-        HistorialItem(1, "Matemáticas", "Quiz", "2025-11-10", 85),
-        HistorialItem(2, "Historia", "Quiz", "2025-11-08", 70)
-    )
-
-    // Datos para el Usuario 2
-    private val historialUsuario2 = listOf(
-        HistorialItem(3, "Ciencias", "Documento", "2025-11-09", 90),
-        HistorialItem(4, "Matemáticas", "Documento", "2025-11-07", 100)
-    )
-
-    private val simulatedFiles = mutableListOf(
-        UploadedFile(
-            id = 1,
-            userEmail = "mateo@test.com", // Pertenece a Mateo (el Maestro)
-            nombre = "Guía de Álgebra (Predefinida)",
-            materia = "Matemáticas",
-            // Esta es la clave: la URI es solo un texto. No apunta a ningún
-            // archivo real, así evitamos usar res/raw.
-            fileUri = "preloaded://guia_algebra_01"
-        )
-    )
-
     // --- FUNCIÓN NUEVA SIMULADA ---
 
     /**
@@ -104,10 +103,10 @@ class UserViewModel() : ViewModel() {
      * en el email del usuario que inició sesión.
      */
     fun getHistorialParaUsuario(): List<HistorialItem> {
-        // Obtiene el email del usuario logueado
+        // obtener correo usuario logeado
         val emailUsuario = loggedInUser.value?.correo
 
-        // Compara el email y devuelve la lista correspondiente
+        // Compara correo devueleve lista
         return when (emailUsuario) {
             "mateo@test.com" -> historialUsuario1
             "juan@test.com" -> historialUsuario2
@@ -116,19 +115,19 @@ class UserViewModel() : ViewModel() {
     }
 
     fun getUploadedFilesForUser(): List<UploadedFile> {
-        // 1. Obtiene el usuario actual y su rol
+        // 1. Obtiene usuario y rol
         val currentUser = loggedInUser.value
         val userRol = currentUser?.rol
 
-        // Si no hay usuario, devuelve lista vacía
+        // Si no hay usuario, lista vacía
         if (currentUser == null) {
             return emptyList()
         }
 
-        // 2. Comprueba el ROL del usuario
+        // 2. Comprueba ROL usuario
         if (userRol == "Alumno") {
-            // SI ES ALUMNO:
-            // a. Encuentra los correos de TODOS los maestros
+            // SI ALUMNO:
+            // a. Encuentra  correos de todos los maestros
             val maestroEmails = simulatedUsers
                 .filter { it.rol == "Maestro" }
                 .map { it.correo }
