@@ -33,7 +33,6 @@ import com.example.mattapp_proyect.viewModel.UserViewModel
 @Composable
 fun HistoryScreen(
     navController: NavController,
-    // Asumimos que pasaste el viewModel desde AppNavigation
     userViewModel: UserViewModel
 ) {
 
@@ -43,14 +42,14 @@ fun HistoryScreen(
     var activeFilter by remember { mutableStateOf("Ninguno") }
 
     // --- 1.b OBTENER DATOS (¡MUCHO MÁS SIMPLE!) ---
-    // Llama a la función simulada del ViewModel. No es Flow, ni suspend.
+    // Llama a la función simulada del ViewModel.
     val listaDeHistorial by userViewModel.getHistorialParaUsuario().collectAsState(initial = emptyList())
 
 
     // --- 2. LÓGICA DE FILTRADO (Funciona igual que antes) ---
 
     val filteredList = remember(searchQuery, activeFilter, listaDeHistorial) {
-        // Primero, aplica la búsqueda (del TextField)
+        // Primero, aplica la búsqueda
         val searchResults = if (searchQuery.isEmpty()) {
             listaDeHistorial
         } else {
@@ -60,7 +59,7 @@ fun HistoryScreen(
             }
         }
 
-        // Segundo, aplica el filtro (del DropdownMenu)
+        // Segundo, aplica el filtro
         when (activeFilter) {
             "Fecha" -> searchResults.sortedByDescending { it.fecha }
             "Materia" -> searchResults.sortedBy { it.materia }
@@ -70,11 +69,11 @@ fun HistoryScreen(
     }
 
 
-    // --- 3. INTERFAZ DE USUARIO (Como en tus otras pantallas) ---
+    // --- 3. INTERFAZ DE USUARIO  ---
     Scaffold(
         topBar = {
             TopAppBar(
-                // --- BOTÓN VOLVER (Implementado antes) ---
+                // --- BOTÓN VOLVER  ---
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(
@@ -84,7 +83,7 @@ fun HistoryScreen(
                     }
                 },
 
-                // --- BARRA DE BÚSQUEDA (El 'title' es ahora un TextField) ---
+                // --- BARRA DE BÚSQUEDA  ---
                 title = {
                     TextField(
                         value = searchQuery,

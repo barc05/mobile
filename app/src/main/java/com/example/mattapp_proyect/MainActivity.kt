@@ -45,7 +45,6 @@ class MainActivity : ComponentActivity() {
             fileDao.insertFile(UploadedFile(userEmail = "mateo@test.com", nombre = "Guía de Álgebra (Predefinida)", materia = "Matemáticas"))
         }
 
-        // 3. Crea el Factory y pásale los 3 DAOs
         val factory = UserViewModelFactory(userDao, historialDao, fileDao)
 
         // 4. Obtén el ViewModel usando el Factory

@@ -100,7 +100,7 @@ class UserViewModel(
         }
     }
 
-    // --- LÓGICA DE ARCHIVOS (USA LA BD) ---
+
     fun getUploadedFilesForUser(): Flow<List<UploadedFile>> {
         val currentUser = loggedInUser.value
         if (currentUser == null) return emptyFlow()

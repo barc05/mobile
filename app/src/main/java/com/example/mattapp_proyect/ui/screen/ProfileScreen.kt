@@ -37,7 +37,6 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel) {
     val currentUser = userViewModel.loggedInUser.value
     var imageUri by remember { mutableStateOf<Uri?>(null) }
 
-    // --- Lógica de tu FileUploadScreen.kt ---
     val selectImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
@@ -45,7 +44,6 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel) {
     }
 
     Scaffold (
-        // --- AÑADE ESTA SECCIÓN 'topBar' ---
         topBar = {
             TopAppBar(
                 title = { Text("Mi Perfil") },
@@ -70,12 +68,9 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel) {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            //Text("Mi Perfil", style = MaterialTheme.typography.headlineLarge)
-            //Spacer(modifier = Modifier.height(16.dp))
-
-            // --- Lógica de imagen (de FileUploadScreen.kt) ---
+            // --- Lógica de imagen  ---
             val painter = rememberAsyncImagePainter(
-                imageUri ?: currentUser?.fotoUri // Muestra la nueva Uri o la guardada
+                imageUri ?: currentUser?.fotoUri
             )
             Image(
                 painter = painter,
@@ -86,7 +81,7 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel) {
                 contentScale = ContentScale.Crop
             )
 
-            // --- Nombre del Usuario (del ViewModel) ---
+            // --- Nombre del Usuario---
             Text(
                 text = currentUser?.nombre ?: "Cargando...",
                 style = MaterialTheme.typography.titleLarge
@@ -100,7 +95,7 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel) {
                 Text("🖼️ Cambiar Foto")
             }
 
-            // Botón para guardar la foto (si se seleccionó una nueva)
+            // Botón para guardar la foto
             if (imageUri != null && currentUser != null) {
                 Button(onClick = {
                     val userActualizado = currentUser.copy(fotoUri = imageUri.toString())
@@ -117,7 +112,7 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel) {
             Button(
                 onClick = { /* TODO: Lógica para cambiar contraseña */ },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = false // Deshabilitado por ahora
+                enabled = false
             ) {
                 Text("1 - Cambiar Contraseña")
             }

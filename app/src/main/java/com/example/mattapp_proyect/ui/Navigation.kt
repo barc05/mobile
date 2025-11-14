@@ -26,9 +26,6 @@ sealed class Screen(val route: String) {
     object Profile : Screen("profile_screen") // NUEVA RUTA
 }
 
-/**
- * Este es el "controlador" principal que decide qué pantalla mostrar.
- */
 @Composable
 fun AppNavigation(userViewModel: UserViewModel) {
     val navController = rememberNavController()
@@ -60,7 +57,6 @@ fun AppNavigation(userViewModel: UserViewModel) {
             ProfileScreen(navController = navController, userViewModel = userViewModel)
         }
 
-        // --- STUBS PARA CORREGIR ERRORES ---
 
         composable(route = Screen.History.route) {
             HistoryScreen(

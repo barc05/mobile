@@ -91,7 +91,6 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
             Text("Crear Cuenta", style = MaterialTheme.typography.headlineLarge)
             Spacer(modifier = Modifier.height(32.dp))
 
-            // --- NUEVO CAMPO AÑADIDO ---
             OutlinedTextField(
                 value = nombre,
                 onValueChange = { nombre = it },
@@ -101,7 +100,7 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
                 singleLine = true,
                 isError = nombre.isEmpty() && correo.isNotEmpty() // Validación simple
             )
-            // --- FIN CAMPO NUEVO ---
+
 
 
             // --- Campo de Email ---
@@ -221,18 +220,15 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // --- 4. BOTÓN FUNCIONAL VALIDADO (IL2.1) ---
+            // --- 4. ---
             Button(
                 onClick = {
                     userViewModel.registraUsuario(nombre, correo, contraseña,rolSeleccionado)
-                    //llamar al ViewModel para registrar al usuario
-                    // Por ahora, solo navegamos a Home (simulado)
                     navController.navigate(Screen.Login.route) {
-                        // Borra el stack de navegación para que no pueda volver
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 },
-                // El botón se activa/desactiva basado en la lógica de validación
+
                 enabled = isFormValid,
                 modifier = Modifier.fillMaxWidth()
             ) {

@@ -36,13 +36,11 @@ fun LoginScreen(
     navController: NavController,
     userViewModel: UserViewModel
 ) {
-    // --- 1. GESTIÓN DE ESTADO (IL2.2) ---
     var correo by remember { mutableStateOf("") }
     var contraseña by remember { mutableStateOf("") }
     var errorMensaje by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
 
-    // Para lanzar la corutina del login
 
 
     // --- 3. INTERFAZ DE USUARIO (IL2.1) ---
@@ -94,13 +92,13 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // --- 4. BOTÓN DE LOGIN (Lógica IL2.2) ---
+            // --- 4. BOTÓN DE LOGIN  ---
             Button(
                 onClick = { scope.launch{
                         val usuarioLogueado = userViewModel.loginUsuario(correo, contraseña)
 
                         if (usuarioLogueado != null) {
-                            // 2. ¡Éxito! (El VM ya guarda el estado)
+                            // 2. ¡Éxito!
                             navController.navigate(Screen.Home.route) {
                                 popUpTo(Screen.Login.route) { inclusive = true }
                             }

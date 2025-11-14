@@ -102,8 +102,6 @@ fun UploadScreen(
                     navController.navigateUp()
                 },
                 modifier = Modifier.fillMaxWidth(),
-                // enabled = fileUri != null // <-- Esto está bien
-                // PERO... también necesitamos un nombre
                 enabled = fileUri != null && nombre.isNotBlank()
             ) {
                 Text("Subir")

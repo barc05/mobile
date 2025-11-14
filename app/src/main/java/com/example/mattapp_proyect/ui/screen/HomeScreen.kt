@@ -48,7 +48,7 @@ fun HomeScreen(navController: NavController,
 
             Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = { navController.navigate(Screen.Archivos.route) }, // <-- NUEVA NAVEGACIÓN
+                onClick = { navController.navigate(Screen.Archivos.route) },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Ver Mis Archivos")
