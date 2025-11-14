@@ -44,7 +44,7 @@ fun HistoryScreen(
 
     // --- 1.b OBTENER DATOS (¡MUCHO MÁS SIMPLE!) ---
     // Llama a la función simulada del ViewModel. No es Flow, ni suspend.
-    val listaDeHistorial = userViewModel.getHistorialParaUsuario()
+    val listaDeHistorial by userViewModel.getHistorialParaUsuario().collectAsState(initial = emptyList())
 
 
     // --- 2. LÓGICA DE FILTRADO (Funciona igual que antes) ---

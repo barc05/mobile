@@ -20,7 +20,7 @@ fun ArchivosScreen(
     userViewModel: UserViewModel
 ) {
     // 1. Obtén la lista de archivos del ViewModel
-    val listaDeArchivos = userViewModel.getUploadedFilesForUser()
+    val listaDeArchivos by userViewModel.getUploadedFilesForUser().collectAsState(initial = emptyList())
 
     Scaffold(
         topBar = {

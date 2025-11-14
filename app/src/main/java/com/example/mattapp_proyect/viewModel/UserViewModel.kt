@@ -4,157 +4,138 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.mattapp_proyect.data.dao.HistorialDao
+import com.example.mattapp_proyect.data.dao.UploadedFileDao
 import com.example.mattapp_proyect.data.model.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.example.mattapp_proyect.data.dao.UserDao
 import com.example.mattapp_proyect.data.model.HistorialItem
 import com.example.mattapp_proyect.data.model.UploadedFile
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import java.text.SimpleDateFormat
+import java.util.Date
 
 /**
  * (IL2.3) Este es el ViewModel que maneja la lógica de
  * Registro e Inicio de Sesión (Autenticación).
  */
-class UserViewModel() : ViewModel() {
-    private val simulatedUsers = mutableListOf(
-        User(
-            nombre = "Mateo",
-            correo = "mateo@test.com",
-            contraseña = "123456",
-            rol = "Maestro"
-        ),
-        User(
-            nombre = "Juan",
-            correo = "juan@test.com",
-            contraseña = "123456",
-            rol = "Alumno"
-        )
-    )
-
-    private val simulatedFiles = mutableListOf(
-        UploadedFile(
-            id = 1,
-            userEmail = "mateo@test.com", // Pertenece a Mateo (el Maestro)
-            nombre = "Guía de Álgebra (Predefinida)",
-            materia = "Matemáticas",
-            // Esta es la clave: la URI es solo un texto. No apunta a ningún
-            // archivo real, así evitamos usar res/raw.
-            fileUri = "preloaded://guia_algebra_01"
-        )
-    )
-
-    private val historialUsuario1 = listOf(
-        HistorialItem(1, "Matemáticas", "Quiz", "2025-11-10", 85),
-        HistorialItem(2, "Historia", "Quiz", "2025-11-08", 70)
-    )
-
-    // Datos para el Usuario 2
-    private val historialUsuario2 = listOf(
-        HistorialItem(3, "Ciencias", "Documento", "2025-11-09", 90),
-        HistorialItem(4, "Matemáticas", "Documento", "2025-11-07", 100)
-    )
-
-
+class UserViewModel(
+    private val userDao: UserDao,
+    private val historialDao: HistorialDao,
+    private val fileDao: UploadedFileDao
+) : ViewModel() {
 
     //usuario logueado
     val loggedInUser = mutableStateOf<User?>(null)
 
     // Función llamada desde la UI (RegisterScreen)
     fun registraUsuario(nombre: String, correo: String, contraseña: String, rol: String) {
-        // 2. Pasa el 'role' al crear el usuario
-        val newUser = User(nombre = nombre, correo = correo, contraseña = contraseña, rol = rol)
-        simulatedUsers.add(newUser)
-    }
-    fun loginUsuario(correo: String, contraseña: String): User? {
-        // Busca en la lista simulada
-        val usuarioEncontrado = simulatedUsers.find {
-            it.correo == correo && it.contraseña == contraseña
+        viewModelScope.launch(Dispatchers.IO) {
+            val newUser = User(nombre, correo, contraseña, rol, null)
+            try {
+                userDao.insertUser(newUser)
+            } catch (e: Exception) {
+                // Manejar error (ej. email ya existe)
+            }
         }
+    }
 
-        if (usuarioEncontrado != null) {
-            loggedInUser.value = usuarioEncontrado // Login correcto
-            return usuarioEncontrado
-        } else {
-            return null // Usuario o contraseña incorrectos
+    // --- LÓGICA DE LOGIN (USA LA BD) ---
+    suspend fun loginUsuario(correo: String, contraseña: String): User? {
+        return withContext(Dispatchers.IO) {
+            val usuarioEncontrado = userDao.getUserByCorreo(correo)
+            if (usuarioEncontrado != null && usuarioEncontrado.contraseña == contraseña) {
+                withContext(Dispatchers.Main) {
+                    loggedInUser.value = usuarioEncontrado
+                }
+                usuarioEncontrado
+            } else {
+                null
+            }
         }
     }
 
     // Actualizar foto usuario
     fun updateUser(user: User) {
-        // En la simulación, solo necesitamos actualizar el estado 'en vivo'
-        loggedInUser.value = user
-
-        // (Opcional: actualizar la lista simulada)
-        val index = simulatedUsers.indexOfFirst { it.correo == user.correo }
-        if (index != -1) {
-            simulatedUsers[index] = user
+        viewModelScope.launch(Dispatchers.IO) {
+            userDao.updateUser(user)
+            withContext(Dispatchers.Main) {
+                loggedInUser.value = user
+            }
         }
     }
 
-    // Cerrar sesion
     fun logout() {
         loggedInUser.value = null
     }
 
-    // --- FUNCIÓN NUEVA SIMULADA ---
-
-    /**
-     * Devuelve una lista de historial FALSA basada
-     * en el email del usuario que inició sesión.
-     */
-    fun getHistorialParaUsuario(): List<HistorialItem> {
-        // obtener correo usuario logeado
+    // --- LÓGICA DE HISTORIAL (USA LA BD) ---
+    fun getHistorialParaUsuario(): Flow<List<HistorialItem>> {
         val emailUsuario = loggedInUser.value?.correo
-
-        // Compara correo devueleve lista
-        return when (emailUsuario) {
-            "mateo@test.com" -> historialUsuario1
-            "juan@test.com" -> historialUsuario2
-            else -> emptyList() // Si es otro usuario, no muestra nada
+        return if (emailUsuario != null) {
+            historialDao.getHistorialForUser(emailUsuario)
+        } else {
+            emptyFlow() // Devuelve un flujo vacío si no hay usuario
         }
     }
 
-    fun getUploadedFilesForUser(): List<UploadedFile> {
-        // 1. Obtiene usuario y rol
-        val currentUser = loggedInUser.value
-        val userRol = currentUser?.rol
+    fun addHistorialItem(materia: String, tipo: String, puntuacion: Int) {
+        val email = loggedInUser.value?.correo ?: return
+        viewModelScope.launch(Dispatchers.IO) {
+            val sdf = SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+            val fechaActual = sdf.format(Date())
 
-        // Si no hay usuario, lista vacía
-        if (currentUser == null) {
-            return emptyList()
+            val nuevoItem = HistorialItem(
+                userEmail = email,
+                materia = materia,
+                tipoArchivo = tipo,
+                fecha = fechaActual,
+                puntuacion = puntuacion
+            )
+            historialDao.insertHistorial(nuevoItem)
         }
+    }
 
-        // 2. Comprueba ROL usuario
-        if (userRol == "Alumno") {
-            // SI ALUMNO:
-            // a. Encuentra  correos de todos los maestros
-            val maestroEmails = simulatedUsers
-                .filter { it.rol == "Maestro" }
-                .map { it.correo }
+    // --- LÓGICA DE ARCHIVOS (USA LA BD) ---
+    fun getUploadedFilesForUser(): Flow<List<UploadedFile>> {
+        val currentUser = loggedInUser.value
+        if (currentUser == null) return emptyFlow()
 
-            // b. Devuelve todos los archivos cuyo 'userEmail' esté en la lista de maestros
-            return simulatedFiles.filter { it.userEmail in maestroEmails }
-
+        return if (currentUser.rol == "Alumno") {
+            // Si es Alumno, trae los archivos del rol "Maestro"
+            fileDao.getFilesForRole("Maestro")
         } else {
-            // SI ES MAESTRO (o cualquier otro rol):
-            // Devuelve solo los archivos que le pertenecen (lógica original)
-            return simulatedFiles.filter { it.userEmail == currentUser.correo }
+            // Si es Maestro, trae solo sus propios archivos
+            fileDao.getFilesForUser(currentUser.correo)
         }
     }
 
     fun addUploadedFile(nombre: String, materia: String, uri: String) {
         val email = loggedInUser.value?.correo ?: return
-        // Genera un ID nuevo (basado en el Proyecto 3)
-        val newId = (simulatedFiles.maxByOrNull { it.id }?.id ?: 0) + 1
-
-        simulatedFiles.add(
-            UploadedFile(
-                id = newId,
+        viewModelScope.launch(Dispatchers.IO) {
+            val newFile = UploadedFile(
                 userEmail = email,
                 nombre = nombre,
                 materia = materia,
                 fileUri = uri
             )
-        )
+            fileDao.insertFile(newFile)
+        }
+    }
+}
+class UserViewModelFactory(
+    private val userDao: UserDao,
+    private val historialDao: HistorialDao,
+    private val fileDao: UploadedFileDao
+) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(UserViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return UserViewModel(userDao, historialDao, fileDao) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

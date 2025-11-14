@@ -28,7 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.mattapp_proyect.ui.Screen
 import com.example.mattapp_proyect.viewModel.UserViewModel
-
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
@@ -39,6 +40,7 @@ fun LoginScreen(
     var correo by remember { mutableStateOf("") }
     var contraseña by remember { mutableStateOf("") }
     var errorMensaje by remember { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
 
     // Para lanzar la corutina del login
 
@@ -94,17 +96,18 @@ fun LoginScreen(
 
             // --- 4. BOTÓN DE LOGIN (Lógica IL2.2) ---
             Button(
-                onClick = {
-                    val usuarioLogueado = userViewModel.loginUsuario(correo, contraseña)
+                onClick = { scope.launch{
+                        val usuarioLogueado = userViewModel.loginUsuario(correo, contraseña)
 
-                    if (usuarioLogueado != null) {
-                        // 2. ¡Éxito! (El VM ya guarda el estado)
-                        navController.navigate(Screen.Home.route) {
-                            popUpTo(Screen.Login.route) { inclusive = true }
+                        if (usuarioLogueado != null) {
+                            // 2. ¡Éxito! (El VM ya guarda el estado)
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Login.route) { inclusive = true }
+                            }
+                        } else {
+                            // Fracaso
+                            errorMensaje = "Correo o contraseña incorrectos"
                         }
-                    } else {
-                        // Fracaso
-                        errorMensaje = "Correo o contraseña incorrectos"
                     }
                 },
                 modifier = Modifier.fillMaxWidth()

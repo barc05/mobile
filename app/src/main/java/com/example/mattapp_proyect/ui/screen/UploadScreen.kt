@@ -30,12 +30,6 @@ fun UploadScreen(
         contract = ActivityResultContracts.OpenDocument() // Abre el gestor de archivos
     ) { uri ->
         fileUri = uri
-        // Opcional: si 'nombre' está vacío, usa el nombre del archivo
-        if (nombre.isEmpty()) {
-            fileUri?.lastPathSegment?.let {
-                nombre = it.substringBeforeLast(".") // Quita la extensión (ej: .pdf)
-            }
-        }
     }
     Scaffold(
         topBar = {
@@ -95,7 +89,7 @@ fun UploadScreen(
 
             Spacer(modifier = Modifier.weight(1f)) // Empuja el botón al fondo
 
-            // --- BOTÓN "SUBIR" ---
+            // --- Boton "SUBIR" ---
             Button(
                 onClick = {
                     fileUri.let { uri ->
@@ -108,7 +102,7 @@ fun UploadScreen(
                     navController.navigateUp()
                 },
                 modifier = Modifier.fillMaxWidth(),
-                // El botón solo se activa si se seleccionó un archivo
+                // boton se activo si selecciona archivo
                 enabled = fileUri != null
             ) {
                 Text("Subir")
