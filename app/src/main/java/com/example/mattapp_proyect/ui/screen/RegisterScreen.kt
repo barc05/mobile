@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
@@ -63,14 +64,14 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
 
     // --- 3. INTERFAZ DE USUARIO (IL2.1) ---
     Scaffold (
-        // Añadimos la barra superior con el botón de "Volver"
+        // --- AÑADE LA BARRA SUPERIOR CON BOTÓN DE VOLVER ---
         topBar = {
             TopAppBar(
                 title = { Text("Crear Cuenta") },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(
-                            imageVector = androidx.compose.material.icons.Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver"
                         )
                     }
@@ -165,6 +166,32 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel) {
                 )
             }
             Spacer(modifier = Modifier.height(32.dp))
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Text("Soy:", style = MaterialTheme.typography.bodyLarge)
+            Row(Modifier.fillMaxWidth()) {
+                rolesOptions.forEach { text ->
+                    Row(
+                        Modifier
+                            .selectable(
+                                selected = (text == rolSeleccionado),
+                                onClick = { rolSeleccionado = text }
+                            )
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        RadioButton(
+                            selected = (text == rolSeleccionado),
+                            onClick = null
+                        )
+                        Text(
+                            text = text,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(start = 8.dp)
+                                .align(Alignment.CenterVertically)
+                        )
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
             Text("Soy:", style = MaterialTheme.typography.bodyLarge)

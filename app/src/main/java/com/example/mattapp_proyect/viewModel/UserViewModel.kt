@@ -32,13 +32,14 @@ class UserViewModel(
     val loggedInUser = mutableStateOf<User?>(null)
 
     // Función llamada desde la UI (RegisterScreen)
-    fun registraUsuario(nombre: String, correo: String, contraseña: String, rol: String) {
+    fun registraUsuario(nombre: String, correo: String, contraseña: String, rol: String) { // <-- AÑADE 'rol'
         viewModelScope.launch(Dispatchers.IO) {
-            val newUser = User(nombre, correo, contraseña, rol, null)
             try {
+                // Pasa el 'rol' al constructor
+                val newUser = User(nombre, correo, contraseña, rol) // <-- AÑADE 'rol'
                 userDao.insertUser(newUser)
             } catch (e: Exception) {
-                // Manejar error (ej. email ya existe)
+                // (Manejar error, ej: email ya existe)
             }
         }
     }
