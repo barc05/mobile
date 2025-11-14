@@ -94,7 +94,6 @@ class UserViewModel(
                 materia = materia,
                 tipoArchivo = tipo,
                 fecha = fechaActual,
-                puntuacion = puntuacion
             )
             historialDao.insertHistorial(nuevoItem)
         }
@@ -120,8 +119,7 @@ class UserViewModel(
             val newFile = UploadedFile(
                 userEmail = email,
                 nombre = nombre,
-                materia = materia,
-                fileUri = uri
+                materia = materia
             )
             fileDao.insertFile(newFile)
         }

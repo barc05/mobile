@@ -21,6 +21,5 @@ data class UploadedFile (
     val id: Int,
     val userEmail: String, // a qué usuario pertenece
     val nombre: String,
-    val materia: String,
-    val fileUri: String // La 'dirección' (aunque sea simulada)
+    val materia: String
 )

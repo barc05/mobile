@@ -22,6 +22,5 @@ data class HistorialItem (
     val userEmail: String,
     val materia: String,
     val tipoArchivo: String,
-    val fecha: String,
-    val puntuacion: Int
+    val fecha: String
 )
