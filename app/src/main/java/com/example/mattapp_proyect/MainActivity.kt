@@ -31,8 +31,8 @@ class MainActivity : ComponentActivity() {
         // 2. PRECARGA los datos simulados en la BD (solo la primera vez)
         lifecycleScope.launch(Dispatchers.IO) {
             // Precarga Usuarios
-            val user1 = User("Mateo", "mateo@test.com", "123456", "Maestro")
-            val user2 = User("Juan", "juan@test.com", "123456", "Alumno")
+            val user1 = User("Mateo", "mateo@test.com", "123456", "Maestro", null)
+            val user2 = User("Juan", "juan@test.com", "123456", "Alumno", null)
             userDao.insertUser(user1)
             userDao.insertUser(user2)
 

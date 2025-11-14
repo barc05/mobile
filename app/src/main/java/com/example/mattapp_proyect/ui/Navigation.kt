@@ -18,7 +18,6 @@ sealed class Screen(val route: String) {
     object Login : Screen("login_screen")
     object Register : Screen("register_screen")
     object Home : Screen("home_screen")
-    object Quiz : Screen("quiz_screen")
     object History : Screen("history_screen")
 
     object Archivos : Screen("archivos_screen")
@@ -62,9 +61,7 @@ fun AppNavigation(userViewModel: UserViewModel) {
         }
 
         // --- STUBS PARA CORREGIR ERRORES ---
-        composable(route = Screen.Quiz.route) {
-            Text("Pantalla de Cuestionario (TODO)")
-        }
+
         composable(route = Screen.History.route) {
             HistoryScreen(
                 navController = navController,

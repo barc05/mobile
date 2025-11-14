@@ -18,7 +18,7 @@ import androidx.room.PrimaryKey
 )
 data class HistorialItem (
     @PrimaryKey(autoGenerate = true)
-    val id: Int,
+    val id: Int = 0,
     val userEmail: String,
     val materia: String,
     val tipoArchivo: String,

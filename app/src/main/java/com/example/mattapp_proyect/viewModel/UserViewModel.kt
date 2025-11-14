@@ -35,10 +35,10 @@ class UserViewModel(
     fun registraUsuario(nombre: String, correo: String, contraseña: String, rol: String) { // <-- AÑADE 'rol'
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                // Pasa el 'rol' al constructor
-                val newUser = User(nombre, correo, contraseña, rol) // <-- AÑADE 'rol'
+                // Pasa el 'rol' al constructor y 'null' para fotoUri
+                val newUser = User(nombre, correo, contraseña, rol, null) // <-- ASÍ
                 userDao.insertUser(newUser)
-            } catch (e: Exception) {
+            }catch (e: Exception) {
                 // (Manejar error, ej: email ya existe)
             }
         }

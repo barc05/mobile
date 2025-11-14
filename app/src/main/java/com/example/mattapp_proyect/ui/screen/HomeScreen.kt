@@ -38,16 +38,6 @@ fun HomeScreen(navController: NavController,
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Botón para iniciar el cuestionario
-            Button(
-                onClick = { navController.navigate(Screen.Quiz.route) },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Empezar Cuestionario")
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             // Botón para ver el historial
             Button(
                 onClick = { navController.navigate(Screen.History.route) },

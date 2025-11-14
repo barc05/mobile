@@ -18,7 +18,7 @@ import androidx.room.PrimaryKey
 )
 data class UploadedFile (
     @PrimaryKey(autoGenerate = true)
-    val id: Int,
+    val id: Int = 0,
     val userEmail: String, // a qué usuario pertenece
     val nombre: String,
     val materia: String
