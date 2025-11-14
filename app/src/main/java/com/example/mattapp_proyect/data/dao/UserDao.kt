@@ -10,7 +10,7 @@ import com.example.mattapp_proyect.data.model.User
 @Dao
 interface UserDao {
     // Usamos 'ABORT' para que falle si el email ya existe
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertUser(user: User)
 
     @Query("SELECT * FROM users WHERE correo = :correo LIMIT 1")
