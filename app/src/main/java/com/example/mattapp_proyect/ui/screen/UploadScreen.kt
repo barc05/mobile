@@ -92,18 +92,19 @@ fun UploadScreen(
             // --- Boton "SUBIR" ---
             Button(
                 onClick = {
-                    fileUri.let { uri ->
-                        userViewModel.addUploadedFile(
-                            nombre = nombre,
-                            materia = materia,
-                            uri = uri.toString()
-                        )
-                    }
+                    // --- LÓGICA MODIFICADA ---
+                    // Ya no pasamos la 'uri'
+                    userViewModel.addUploadedFile(
+                        nombre = nombre,
+                        materia = materia
+                    )
+                    // -------------------------
                     navController.navigateUp()
                 },
                 modifier = Modifier.fillMaxWidth(),
-                // boton se activo si selecciona archivo
-                enabled = fileUri != null
+                // enabled = fileUri != null // <-- Esto está bien
+                // PERO... también necesitamos un nombre
+                enabled = fileUri != null && nombre.isNotBlank()
             ) {
                 Text("Subir")
             }

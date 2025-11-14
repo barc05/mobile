@@ -37,12 +37,12 @@ class MainActivity : ComponentActivity() {
             userDao.insertUser(user2)
 
             // Precarga Historial
-            historialDao.insertHistorial(HistorialItem(userEmail = "mateo@test.com", materia = "Matemáticas", tipoArchivo = "Quiz", fecha = "2025-11-10", puntuacion = 85))
-            historialDao.insertHistorial(HistorialItem(userEmail = "mateo@test.com", materia = "Historia", tipoArchivo = "Quiz", fecha = "2025-11-08", puntuacion = 70))
-            historialDao.insertHistorial(HistorialItem(userEmail = "juan@test.com", materia = "Ciencias", tipoArchivo = "Documento", fecha = "2025-11-09", puntuacion = 90))
+            historialDao.insertHistorial(HistorialItem(userEmail = "mateo@test.com", materia = "Matemáticas", tipoArchivo = "Quiz", fecha = "2025-11-10"))
+            historialDao.insertHistorial(HistorialItem(userEmail = "mateo@test.com", materia = "Historia", tipoArchivo = "Quiz", fecha = "2025-11-08"))
+            historialDao.insertHistorial(HistorialItem(userEmail = "juan@test.com", materia = "Ciencias", tipoArchivo = "Documento", fecha = "2025-11-09"))
 
-            // Precarga Archivos
-            fileDao.insertFile(UploadedFile(userEmail = "mateo@test.com", nombre = "Guía de Álgebra (Predefinida)", materia = "Matemáticas", fileUri = "preloaded://guia_algebra_01"))
+            // --- Precarga Archivos (MODIFICADA) ---
+            fileDao.insertFile(UploadedFile(userEmail = "mateo@test.com", nombre = "Guía de Álgebra (Predefinida)", materia = "Matemáticas"))
         }
 
         // 3. Crea el Factory y pásale los 3 DAOs

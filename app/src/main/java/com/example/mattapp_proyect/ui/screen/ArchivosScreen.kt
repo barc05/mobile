@@ -53,8 +53,7 @@ fun ArchivosScreen(
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(archivo.nombre, style = MaterialTheme.typography.titleMedium)
                     Text("Materia: ${archivo.materia}")
-                    // Como el archivo no es real, solo mostramos su URI simulada
-                    Text("Ubicación: ${archivo.fileUri}", style = MaterialTheme.typography.bodySmall)
+
                 }
             }
         }

@@ -151,7 +151,6 @@ fun HistoryScreen(
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text("Materia: ${item.materia}", style = MaterialTheme.typography.titleMedium)
                     Text("Tipo: ${item.tipoArchivo}, Fecha: ${item.fecha}")
-                    Text("Puntuación: ${item.puntuacion}")
                 }
             }
         }

@@ -83,7 +83,7 @@ class UserViewModel(
         }
     }
 
-    fun addHistorialItem(materia: String, tipo: String, puntuacion: Int) {
+    fun addHistorialItem(materia: String, tipo: String) {
         val email = loggedInUser.value?.correo ?: return
         viewModelScope.launch(Dispatchers.IO) {
             val sdf = SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
@@ -93,7 +93,8 @@ class UserViewModel(
                 userEmail = email,
                 materia = materia,
                 tipoArchivo = tipo,
-                fecha = fechaActual,
+                fecha = fechaActual
+                // 2. 'puntuacion' YA NO SE AÑADE
             )
             historialDao.insertHistorial(nuevoItem)
         }
@@ -113,13 +114,14 @@ class UserViewModel(
         }
     }
 
-    fun addUploadedFile(nombre: String, materia: String, uri: String) {
+    fun addUploadedFile(nombre: String, materia: String) {
         val email = loggedInUser.value?.correo ?: return
         viewModelScope.launch(Dispatchers.IO) {
             val newFile = UploadedFile(
                 userEmail = email,
                 nombre = nombre,
                 materia = materia
+                // 2. 'fileUri' YA NO SE AÑADE
             )
             fileDao.insertFile(newFile)
         }

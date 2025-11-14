@@ -52,7 +52,6 @@ fun AppNavigation(userViewModel: UserViewModel) {
         // --- Pantalla Principal (Menú) ---
         composable(route = Screen.Home.route) {
             HomeScreen(navController = navController,
-                userViewModel = userViewModel,
                 userViewModel = userViewModel)
 
         }
