@@ -4,6 +4,8 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.example.mattapp_proyect.data.model.HistorialItem
+import com.example.mattapp_proyect.data.model.User
 import com.example.mattapp_proyect.ui.screen.HistoryScreen
 import com.example.mattapp_proyect.viewModel.UserViewModel
 import org.junit.Rule
@@ -20,8 +22,14 @@ class HistoryScreenTest {
 
     @Test
     fun testVistaHistorial() {
-        // Login para cargar historial asociado
-        viewModel.loginUsuario("mateo@test.com", "123456")
+        val mockUser = User("id1", "Mateo", "mateo@test.com", "123", "Maestro")
+        viewModel.setUserState(mockUser)
+
+        val mockHistory = listOf(
+            HistorialItem(1, "mateo@test.com", "Matemáticas", "Examen", "2023-11-10"),
+            HistorialItem(2, "mateo@test.com", "Historia", "Tarea", "2023-11-11")
+        )
+        viewModel.setHistorialState(mockHistory)
 
         composeTestRule.setContent {
             HistoryScreen(
@@ -32,14 +40,16 @@ class HistoryScreenTest {
 
         composeTestRule.waitForIdle()
 
-        // Barra de búsqueda
+        // Verifica barra de búsqueda
         composeTestRule.onNodeWithText("Buscar en historial...").assertIsDisplayed()
 
-        // Verificar items del historial (Datos mock: Matemáticas, Historia)
+        // Verificar que APARECE el item inyectado
         composeTestRule.onNodeWithText("Matemáticas", substring = true).assertIsDisplayed()
 
-        // Filtro de búsqueda
+        // Escribir en búsqueda
         composeTestRule.onNodeWithText("Buscar en historial...").performTextInput("Historia")
-        composeTestRule.onNodeWithText("Historia", substring = true).assertIsDisplayed()
+
+        // Verificar que se filtra/muestra Historia
+        composeTestRule.onNodeWithText("Materia: Historia", substring = true).assertIsDisplayed()
     }
 }

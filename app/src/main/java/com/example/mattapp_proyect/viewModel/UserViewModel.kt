@@ -17,15 +17,12 @@ class UserViewModel : ViewModel() {
 
     private val repo = UserRepository()
 
-    // --- Estado de Usuario Logueado ---
     private val _loggedInUser = MutableStateFlow<User?>(null)
     val loggedInUser: StateFlow<User?> = _loggedInUser.asStateFlow()
 
-    // --- Lista de Archivos ---
     private val _files = MutableStateFlow<List<UploadedFile>>(emptyList())
     val files: StateFlow<List<UploadedFile>> = _files.asStateFlow()
 
-    // --- Estados de carga y error (como en el ejemplo) ---
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading.asStateFlow()
 
@@ -35,20 +32,29 @@ class UserViewModel : ViewModel() {
     private val _historial = MutableStateFlow<List<HistorialItem>>(emptyList())
     val historial: StateFlow<List<HistorialItem>> = _historial.asStateFlow()
 
-    // --- FUNCIONES ---
+    fun setUserState(user: User) {
+        _loggedInUser.value = user
+    }
+
+    fun setFilesState(lista: List<UploadedFile>) {
+        _files.value = lista
+    }
+
+    fun setHistorialState(lista: List<HistorialItem>) {
+        _historial.value = lista
+    }
 
     fun loginUsuario(correo: String, contraseña: String) {
         viewModelScope.launch {
             _loading.value = true
             _errorMessage.value = null
             try {
-                // Obtenemos todos los usuarios y filtramos (simulación de login)
                 val users = repo.getUsers()
                 val user = users.find { it.correo == correo && it.contraseña == contraseña }
 
                 if (user != null) {
                     _loggedInUser.value = user
-                    fetchUploadedFiles() // Cargar archivos al loguear
+                    fetchUploadedFiles()
                 } else {
                     _errorMessage.value = "Credenciales incorrectas"
                 }
@@ -73,7 +79,6 @@ class UserViewModel : ViewModel() {
                     rol = rol
                 )
                 repo.createUser(newUser)
-                // Opcional: Auto-login
             } catch (e: Exception) {
                 e.printStackTrace()
                 _errorMessage.value = "Error al registrar"
@@ -97,7 +102,6 @@ class UserViewModel : ViewModel() {
         }
     }
 
-    // Esta función usa el nuevo MultipartUtils igual que el ejemplo uploadUserWithImage
     fun addUploadedFile(context: Context, uri: Uri) {
         val currentUser = _loggedInUser.value ?: return
         val userId = currentUser.id ?: return
@@ -132,7 +136,6 @@ class UserViewModel : ViewModel() {
                 _historial.value = repo.getHistorial(userId)
             } catch (e: Exception) {
                 e.printStackTrace()
-                // Opcional: Manejar error en _errorMessage
             } finally {
                 _loading.value = false
             }

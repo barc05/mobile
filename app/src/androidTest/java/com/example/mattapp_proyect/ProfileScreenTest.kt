@@ -4,6 +4,7 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.example.mattapp_proyect.data.model.User
 import com.example.mattapp_proyect.ui.screen.ProfileScreen
 import com.example.mattapp_proyect.viewModel.UserViewModel
 import org.junit.Rule
@@ -20,8 +21,14 @@ class ProfileScreenTest {
 
     @Test
     fun testVistaPerfil() {
-        // Login previo
-        viewModel.loginUsuario("mateo@test.com", "123456")
+        val mockUser = User(
+            id = "123",
+            nombre = "Mateo",
+            correo = "mateo@test.com",
+            contraseña = "pass",
+            rol = "Maestro"
+        )
+        viewModel.setUserState(mockUser)
 
         composeTestRule.setContent {
             ProfileScreen(
@@ -32,11 +39,9 @@ class ProfileScreenTest {
 
         composeTestRule.waitForIdle()
 
-        // Verificar datos
         composeTestRule.onNodeWithText("Mateo").assertIsDisplayed()
         composeTestRule.onNodeWithText("mateo@test.com").assertIsDisplayed()
 
-        // Verificar opciones
         composeTestRule.onNodeWithText("Cambiar Foto", substring = true).assertIsDisplayed()
         composeTestRule.onNodeWithText("Cerrar Sesión", substring = true).assertIsDisplayed()
     }
