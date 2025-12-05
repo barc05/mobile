@@ -20,9 +20,7 @@ class HomeScreenTest {
 
     @Test
     fun testVistaHomeConUsuario() {
-        // Simulamos login antes de montar la UI (usando credenciales que sabemos que existen en el Repo mock/api)
-        // Nota: Si usas la API real, asegúrate de que este usuario exista o créalo en el test.
-        // Si usas el Repo Mock (local), "mateo@test.com" existe por defecto.
+
         viewModel.loginUsuario("mateo@test.com", "123456")
 
         composeTestRule.setContent {
@@ -32,11 +30,8 @@ class HomeScreenTest {
             )
         }
 
-        // Esperar a que la UI reaccione (Compose rule espera idle automáticamente, pero el login es asíncrono)
         composeTestRule.waitForIdle()
 
-        // Verificar saludo (Mateo es el nombre del usuario mock)
-        // Usamos substring=true por si el texto es "¡Bienvenido, Mateo!"
         composeTestRule.onNodeWithText("Mateo", substring = true).assertIsDisplayed()
 
         // Verificar botones de navegación

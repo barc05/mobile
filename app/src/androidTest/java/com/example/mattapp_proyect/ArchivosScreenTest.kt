@@ -35,8 +35,6 @@ class ArchivosScreenTest {
         // Verificar título
         composeTestRule.onNodeWithText("Mis Archivos Subidos").assertIsDisplayed()
 
-        // Verificar lista (Mateo tiene un archivo mock: "Guía de Álgebra")
-        // Nota: Asegúrate de que el Mock en UserRepository tenga este archivo
         composeTestRule.onNodeWithText("Guía de Álgebra", substring = true).assertIsDisplayed()
     }
 }

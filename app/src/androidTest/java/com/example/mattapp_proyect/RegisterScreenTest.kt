@@ -28,12 +28,12 @@ class RegisterScreenTest {
         }
 
         // Verificar título
-        composeTestRule.onNodeWithText("Crear Cuenta").assertIsDisplayed()
+        composeTestRule.onAllNodesWithText("Crear Cuenta").onFirst().assertIsDisplayed()
 
         // Verificar campos de texto
         composeTestRule.onNodeWithText("Nombre Completo").assertIsDisplayed()
         composeTestRule.onNodeWithText("Correo Electrónico").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Contraseña").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Contraseña (min 6 chars)").assertIsDisplayed()
         composeTestRule.onNodeWithText("Confirmar Contraseña").assertIsDisplayed()
 
         // Interactuar
