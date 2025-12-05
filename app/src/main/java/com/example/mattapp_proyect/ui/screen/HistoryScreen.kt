@@ -1,6 +1,5 @@
 package com.example.mattapp_proyect.ui.screen
 
-
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,23 +10,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+// --- IMPORTANTE: Se agregó este import ---
+import com.example.mattapp_proyect.data.model.HistorialItem
 import com.example.mattapp_proyect.viewModel.UserViewModel
-
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,21 +25,20 @@ fun HistoryScreen(
     navController: NavController,
     userViewModel: UserViewModel
 ) {
+    // 1. Cargar Historial al iniciar
+    LaunchedEffect(Unit) {
+        userViewModel.fetchHistorial()
+    }
 
-    // --- 1. ESTADOS (Búsqueda y filtro se mantienen) ---
+    // 2. Observar Estado
+    val listaDeHistorial by userViewModel.historial.collectAsState()
+
     var searchQuery by remember { mutableStateOf("") }
     var showFilterMenu by remember { mutableStateOf(false) }
     var activeFilter by remember { mutableStateOf("Ninguno") }
 
-    // --- 1.b OBTENER DATOS (¡MUCHO MÁS SIMPLE!) ---
-    // Llama a la función simulada del ViewModel.
-    val listaDeHistorial by userViewModel.getHistorialParaUsuario().collectAsState(initial = emptyList())
-
-
-    // --- 2. LÓGICA DE FILTRADO (Funciona igual que antes) ---
-
+    // Lógica de filtrado
     val filteredList = remember(searchQuery, activeFilter, listaDeHistorial) {
-        // Primero, aplica la búsqueda
         val searchResults = if (searchQuery.isEmpty()) {
             listaDeHistorial
         } else {
@@ -59,97 +48,64 @@ fun HistoryScreen(
             }
         }
 
-        // Segundo, aplica el filtro
         when (activeFilter) {
             "Fecha" -> searchResults.sortedByDescending { it.fecha }
             "Materia" -> searchResults.sortedBy { it.materia }
             "Tipo" -> searchResults.sortedBy { it.tipoArchivo }
-            else -> searchResults // "Ninguno"
+            else -> searchResults
         }
     }
 
-
-    // --- 3. INTERFAZ DE USUARIO  ---
     Scaffold(
         topBar = {
             TopAppBar(
-                // --- BOTÓN VOLVER  ---
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver"
-                        )
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver")
                     }
                 },
-
-                // --- BARRA DE BÚSQUEDA  ---
                 title = {
                     TextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
                         modifier = Modifier.fillMaxWidth(),
                         placeholder = { Text("Buscar en historial...") },
-                        leadingIcon = {
-                            Icon(Icons.Default.Search, contentDescription = "Buscar")
-                        }
+                        leadingIcon = { Icon(Icons.Default.Search, "Buscar") }
                     )
                 },
-
-                // --- BOTÓN DE FILTRO (Acciones) ---
                 actions = {
                     IconButton(onClick = { showFilterMenu = true }) {
-                        Icon(Icons.Default.FilterList, contentDescription = "Filtrar")
+                        Icon(Icons.Default.FilterList, "Filtrar")
                     }
-
-                    // --- MENÚ DESPLEGABLE DE FILTROS ---
                     DropdownMenu(
                         expanded = showFilterMenu,
                         onDismissRequest = { showFilterMenu = false }
                     ) {
-                        DropdownMenuItem(
-                            text = { Text("Filtrar por: Fecha") },
-                            onClick = {
-                                activeFilter = "Fecha"
-                                showFilterMenu = false
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Filtrar por: Materia") },
-                            onClick = {
-                                activeFilter = "Materia"
-                                showFilterMenu = false
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Filtrar por: Tipo") },
-                            onClick = {
-                                activeFilter = "Tipo"
-                                showFilterMenu = false
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Quitar Filtro") },
-                            onClick = {
-                                activeFilter = "Ninguno"
-                                showFilterMenu = false
-                            }
-                        )
+                        listOf("Fecha", "Materia", "Tipo", "Ninguno").forEach { filtro ->
+                            DropdownMenuItem(
+                                text = { Text(filtro) },
+                                onClick = {
+                                    activeFilter = filtro
+                                    showFilterMenu = false
+                                }
+                            )
+                        }
                     }
                 }
             )
         }
     ) { padding ->
-        // --- 4. LISTA DE RESULTADOS ---
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
+            // Se usa items importado de androidx.compose.foundation.lazy.items
             items(filteredList) { item ->
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text("Materia: ${item.materia}", style = MaterialTheme.typography.titleMedium)
                     Text("Tipo: ${item.tipoArchivo}, Fecha: ${item.fecha}")
+                    Divider()
                 }
             }
         }

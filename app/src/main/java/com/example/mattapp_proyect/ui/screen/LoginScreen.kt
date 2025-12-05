@@ -1,25 +1,9 @@
 package com.example.mattapp_proyect.ui.screen
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
@@ -28,8 +12,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.mattapp_proyect.ui.Screen
 import com.example.mattapp_proyect.viewModel.UserViewModel
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
@@ -38,12 +20,22 @@ fun LoginScreen(
 ) {
     var correo by remember { mutableStateOf("") }
     var contraseña by remember { mutableStateOf("") }
-    var errorMensaje by remember { mutableStateOf<String?>(null) }
-    val scope = rememberCoroutineScope()
 
+    // --- Observamos los estados del ViewModel ---
+    val loggedInUser by userViewModel.loggedInUser.collectAsState()
+    val isLoading by userViewModel.loading.collectAsState()
+    val errorMessage by userViewModel.errorMessage.collectAsState()
 
+    // --- Efecto de Navegación ---
+    // Si loggedInUser deja de ser null, navegamos al Home
+    LaunchedEffect(loggedInUser) {
+        if (loggedInUser != null) {
+            navController.navigate(Screen.Home.route) {
+                popUpTo(Screen.Login.route) { inclusive = true }
+            }
+        }
+    }
 
-    // --- 3. INTERFAZ DE USUARIO (IL2.1) ---
     Scaffold { paddingValues ->
         Column(
             modifier = Modifier
@@ -57,7 +49,7 @@ fun LoginScreen(
             Text("Iniciar Sesión", style = MaterialTheme.typography.headlineLarge)
             Spacer(modifier = Modifier.height(32.dp))
 
-            // --- Campo de Email ---
+            // Campo Email
             OutlinedTextField(
                 value = correo,
                 onValueChange = { correo = it },
@@ -69,7 +61,7 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- Campo de Contraseña ---
+            // Campo Contraseña
             OutlinedTextField(
                 value = contraseña,
                 onValueChange = { contraseña = it },
@@ -80,11 +72,11 @@ fun LoginScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
             )
 
-            // --- Mensaje de Error (Retroalimentación Visual IL2.1) ---
-            if (errorMensaje != null) {
+            // Mensaje de Error (si existe)
+            if (errorMessage != null) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = errorMensaje!!,
+                    text = errorMessage!!,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodyMedium
                 )
@@ -92,28 +84,25 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // --- 4. BOTÓN DE LOGIN  ---
+            // Botón Entrar
             Button(
-                onClick = { scope.launch{
-                        val usuarioLogueado = userViewModel.loginUsuario(correo, contraseña)
-
-                        if (usuarioLogueado != null) {
-                            // 2. ¡Éxito!
-                            navController.navigate(Screen.Home.route) {
-                                popUpTo(Screen.Login.route) { inclusive = true }
-                            }
-                        } else {
-                            // Fracaso
-                            errorMensaje = "Correo o contraseña incorrectos"
-                        }
-                    }
+                onClick = {
+                    userViewModel.loginUsuario(correo, contraseña)
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isLoading // Deshabilitar si está cargando
             ) {
-                Text("Entrar")
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Text("Entrar")
+                }
             }
 
-            // --- Navegación a Registro (IL2.1) ---
+            // Ir a Registro
             TextButton(
                 onClick = {
                     navController.navigate(Screen.Register.route)

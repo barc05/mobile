@@ -8,15 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,13 +20,12 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.mattapp_proyect.ui.Screen
 import com.example.mattapp_proyect.viewModel.UserViewModel
 
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(navController: NavController, userViewModel: UserViewModel) {
 
-    val currentUser = userViewModel.loggedInUser.value
+    // Observar usuario con StateFlow
+    val currentUser by userViewModel.loggedInUser.collectAsState()
     var imageUri by remember { mutableStateOf<Uri?>(null) }
 
     val selectImageLauncher = rememberLauncherForActivityResult(
@@ -43,22 +34,18 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel) {
         imageUri = uri
     }
 
-    Scaffold (
+    Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Mi Perfil") },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver"
-                        )
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver")
                     }
                 }
             )
         }
-        // --- FIN DE LA SECCIÓN ---
-    ){ paddingValues ->
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -68,7 +55,7 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel) {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            // --- Lógica de imagen  ---
+            // Imagen
             val painter = rememberAsyncImagePainter(
                 imageUri ?: currentUser?.fotoUri
             )
@@ -81,7 +68,7 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel) {
                 contentScale = ContentScale.Crop
             )
 
-            // --- Nombre del Usuario---
+            // Datos
             Text(
                 text = currentUser?.nombre ?: "Cargando...",
                 style = MaterialTheme.typography.titleLarge
@@ -95,12 +82,14 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel) {
                 Text("🖼️ Cambiar Foto")
             }
 
-            // Botón para guardar la foto
-            if (imageUri != null && currentUser != null) {
+            // Botón Guardar Foto (CORREGIDO)
+            if (imageUri != null) {
                 Button(onClick = {
-                    val userActualizado = currentUser.copy(fotoUri = imageUri.toString())
-                    userViewModel.updateUser(userActualizado)
-                    imageUri = null // Limpiar la selección
+                    // Llamada correcta a la función del nuevo ViewModel
+                    userViewModel.addUploadedFile(navController.context, imageUri!!)
+                    // O si implementaste updateUserPhoto específicamente:
+                    // userViewModel.updateUserPhoto(imageUri!!)
+                    imageUri = null
                 }) {
                     Text("Guardar Foto")
                 }
@@ -108,28 +97,10 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel) {
 
             Divider(Modifier.padding(vertical = 16.dp))
 
-            // --- Opciones de Configuración ---
-            Button(
-                onClick = { /* TODO: Lógica para cambiar contraseña */ },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = false
-            ) {
-                Text("1 - Cambiar Contraseña")
-            }
-
-            Button(
-                onClick = { /* TODO: Lógica para ajustes */ },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = false // Deshabilitado por ahora
-            ) {
-                Text("2 - Ajustes de Notificación")
-            }
-
             Button(
                 onClick = {
                     userViewModel.logout()
                     navController.navigate(Screen.Login.route) {
-                        // Limpiar el stack para que no pueda volver atrás
                         popUpTo(Screen.Home.route) { inclusive = true }
                         launchSingleTop = true
                     }

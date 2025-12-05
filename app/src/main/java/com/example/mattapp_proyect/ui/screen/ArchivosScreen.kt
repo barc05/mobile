@@ -11,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.mattapp_proyect.viewModel.UserViewModel
-import com.example.mattapp_proyect.data.model.UploadedFile
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -19,8 +18,14 @@ fun ArchivosScreen(
     navController: NavController,
     userViewModel: UserViewModel
 ) {
-    // 1. Obtén la lista de archivos del ViewModel
-    val listaDeArchivos by userViewModel.getUploadedFilesForUser().collectAsState(initial = emptyList())
+    // 1. Cargar datos al iniciar la pantalla
+    LaunchedEffect(Unit) {
+        userViewModel.fetchUploadedFiles()
+    }
+
+    // 2. Observar el estado (StateFlow)
+    val listaDeArchivos by userViewModel.files.collectAsState()
+    val isLoading by userViewModel.loading.collectAsState()
 
     Scaffold(
         topBar = {
@@ -34,26 +39,32 @@ fun ArchivosScreen(
             )
         }
     ) { padding ->
-        // 2. Muestra la lista
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            if (listaDeArchivos.isEmpty()) {
-                item {
-                    Text(
-                        text = "Aún no has subido archivos.",
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                CircularProgressIndicator()
             }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+            ) {
+                if (listaDeArchivos.isEmpty()) {
+                    item {
+                        Text(
+                            text = "Aún no has subido archivos.",
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                }
 
-            items(listaDeArchivos) { archivo ->
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(archivo.nombre, style = MaterialTheme.typography.titleMedium)
-                    Text("Materia: ${archivo.materia}")
-
+                items(listaDeArchivos) { archivo ->
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(archivo.nombre, style = MaterialTheme.typography.titleMedium)
+                        // Nota: La API de ejemplo no guarda 'materia', mostramos un valor por defecto o vacio
+                        Text("Materia: ${archivo.materia}")
+                        Divider()
+                    }
                 }
             }
         }

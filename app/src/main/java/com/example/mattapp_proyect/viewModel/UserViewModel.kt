@@ -1,142 +1,119 @@
 package com.example.mattapp_proyect.viewModel
 
-import androidx.compose.runtime.mutableStateOf
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.mattapp_proyect.data.dao.HistorialDao
-import com.example.mattapp_proyect.data.dao.UploadedFileDao
-import com.example.mattapp_proyect.data.model.User
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import com.example.mattapp_proyect.data.dao.UserDao
-import com.example.mattapp_proyect.data.model.HistorialItem
 import com.example.mattapp_proyect.data.model.UploadedFile
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
-import java.text.SimpleDateFormat
-import java.util.Date
+import com.example.mattapp_proyect.data.model.User
+import com.example.mattapp_proyect.repository.UserRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
-/**
- * (IL2.3) Este es el ViewModel que maneja la lógica de
- * Registro e Inicio de Sesión (Autenticación).
- */
-class UserViewModel(
-    private val userDao: UserDao,
-    private val historialDao: HistorialDao,
-    private val fileDao: UploadedFileDao
-) : ViewModel() {
+class UserViewModel : ViewModel() {
 
-    //usuario logueado
-    val loggedInUser = mutableStateOf<User?>(null)
+    private val repo = UserRepository()
 
-    // Función llamada desde la UI (RegisterScreen)
-    fun registraUsuario(nombre: String, correo: String, contraseña: String, rol: String) { // <-- AÑADE 'rol'
-        viewModelScope.launch(Dispatchers.IO) {
+    // --- Estado de Usuario Logueado ---
+    private val _loggedInUser = MutableStateFlow<User?>(null)
+    val loggedInUser: StateFlow<User?> = _loggedInUser.asStateFlow()
+
+    // --- Lista de Archivos ---
+    private val _files = MutableStateFlow<List<UploadedFile>>(emptyList())
+    val files: StateFlow<List<UploadedFile>> = _files.asStateFlow()
+
+    // --- Estados de carga y error (como en el ejemplo) ---
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading.asStateFlow()
+
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
+    // --- FUNCIONES ---
+
+    fun loginUsuario(correo: String, contraseña: String) {
+        viewModelScope.launch {
+            _loading.value = true
+            _errorMessage.value = null
             try {
-                // Pasa el 'rol' al constructor y 'null' para fotoUri
-                val newUser = User(nombre, correo, contraseña, rol, null) // <-- ASÍ
-                userDao.insertUser(newUser)
-            }catch (e: Exception) {
-                // (Manejar error, ej: email ya existe)
-            }
-        }
-    }
+                // Obtenemos todos los usuarios y filtramos (simulación de login)
+                val users = repo.getUsers()
+                val user = users.find { it.correo == correo && it.contraseña == contraseña }
 
-    // --- LÓGICA DE LOGIN (USA LA BD) ---
-    suspend fun loginUsuario(correo: String, contraseña: String): User? {
-        return withContext(Dispatchers.IO) {
-            val usuarioEncontrado = userDao.getUserByCorreo(correo)
-            if (usuarioEncontrado != null && usuarioEncontrado.contraseña == contraseña) {
-                withContext(Dispatchers.Main) {
-                    loggedInUser.value = usuarioEncontrado
+                if (user != null) {
+                    _loggedInUser.value = user
+                    fetchUploadedFiles() // Cargar archivos al loguear
+                } else {
+                    _errorMessage.value = "Credenciales incorrectas"
                 }
-                usuarioEncontrado
-            } else {
-                null
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _errorMessage.value = "Error de conexión: ${e.message}"
+            } finally {
+                _loading.value = false
             }
         }
     }
 
-    // Actualizar foto usuario
-    fun updateUser(user: User) {
-        viewModelScope.launch(Dispatchers.IO) {
-            userDao.updateUser(user)
-            withContext(Dispatchers.Main) {
-                loggedInUser.value = user
+    fun registraUsuario(nombre: String, correo: String, contraseña: String, rol: String) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                val newUser = User(
+                    id = null, // El servidor genera el UUID
+                    nombre = nombre,
+                    correo = correo,
+                    contraseña = contraseña,
+                    rol = rol
+                )
+                repo.createUser(newUser)
+                // Opcional: Auto-login
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _errorMessage.value = "Error al registrar"
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun fetchUploadedFiles() {
+        val currentUser = _loggedInUser.value ?: return
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                _files.value = repo.getFilesForUser(currentUser.id, currentUser.rol)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    // Esta función usa el nuevo MultipartUtils igual que el ejemplo uploadUserWithImage
+    fun addUploadedFile(context: Context, uri: Uri) {
+        val currentUser = _loggedInUser.value ?: return
+        val userId = currentUser.id ?: return
+
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                repo.uploadFile(context, userId, uri)
+                fetchUploadedFiles() // Recargar lista
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _errorMessage.value = "Error al subir archivo"
+            } finally {
+                _loading.value = false
             }
         }
     }
 
     fun logout() {
-        loggedInUser.value = null
-    }
-
-    // --- LÓGICA DE HISTORIAL (USA LA BD) ---
-    fun getHistorialParaUsuario(): Flow<List<HistorialItem>> {
-        val emailUsuario = loggedInUser.value?.correo
-        return if (emailUsuario != null) {
-            historialDao.getHistorialForUser(emailUsuario)
-        } else {
-            emptyFlow() // Devuelve un flujo vacío si no hay usuario
-        }
-    }
-
-    fun addHistorialItem(materia: String, tipo: String) {
-        val email = loggedInUser.value?.correo ?: return
-        viewModelScope.launch(Dispatchers.IO) {
-            val sdf = SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-            val fechaActual = sdf.format(Date())
-
-            val nuevoItem = HistorialItem(
-                userEmail = email,
-                materia = materia,
-                tipoArchivo = tipo,
-                fecha = fechaActual
-                // 2. 'puntuacion' YA NO SE AÑADE
-            )
-            historialDao.insertHistorial(nuevoItem)
-        }
-    }
-
-
-    fun getUploadedFilesForUser(): Flow<List<UploadedFile>> {
-        val currentUser = loggedInUser.value
-        if (currentUser == null) return emptyFlow()
-
-        return if (currentUser.rol == "Alumno") {
-            // Si es Alumno, trae los archivos del rol "Maestro"
-            fileDao.getFilesForRole("Maestro")
-        } else {
-            // Si es Maestro, trae solo sus propios archivos
-            fileDao.getFilesForUser(currentUser.correo)
-        }
-    }
-
-    fun addUploadedFile(nombre: String, materia: String) {
-        val email = loggedInUser.value?.correo ?: return
-        viewModelScope.launch(Dispatchers.IO) {
-            val newFile = UploadedFile(
-                userEmail = email,
-                nombre = nombre,
-                materia = materia
-                // 2. 'fileUri' YA NO SE AÑADE
-            )
-            fileDao.insertFile(newFile)
-        }
-    }
-}
-class UserViewModelFactory(
-    private val userDao: UserDao,
-    private val historialDao: HistorialDao,
-    private val fileDao: UploadedFileDao
-) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(UserViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return UserViewModel(userDao, historialDao, fileDao) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
+        _loggedInUser.value = null
+        _files.value = emptyList()
     }
 }

@@ -1,17 +1,8 @@
 package com.example.mattapp_proyect.ui.screen
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -20,10 +11,12 @@ import com.example.mattapp_proyect.ui.Screen
 import com.example.mattapp_proyect.viewModel.UserViewModel
 
 @Composable
-fun HomeScreen(navController: NavController,
-               userViewModel: UserViewModel) {
-
-    val currentUser = userViewModel.loggedInUser.value
+fun HomeScreen(
+    navController: NavController,
+    userViewModel: UserViewModel
+) {
+    // Observamos al usuario logueado desde el StateFlow
+    val currentUser by userViewModel.loggedInUser.collectAsState()
 
     Scaffold { paddingValues ->
         Column(
@@ -34,7 +27,11 @@ fun HomeScreen(navController: NavController,
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("¡Bienvenido, ${currentUser?.nombre ?: ""}!", style = MaterialTheme.typography.headlineLarge)
+            // Mostramos el nombre del usuario o un texto por defecto
+            Text(
+                text = "¡Bienvenido, ${currentUser?.nombre ?: "Usuario"}!",
+                style = MaterialTheme.typography.headlineLarge
+            )
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -47,6 +44,8 @@ fun HomeScreen(navController: NavController,
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+
+            // Botón para ver archivos
             Button(
                 onClick = { navController.navigate(Screen.Archivos.route) },
                 modifier = Modifier.fillMaxWidth()
@@ -54,6 +53,7 @@ fun HomeScreen(navController: NavController,
                 Text("Ver Mis Archivos")
             }
 
+            // Botón condicional según el Rol
             if (currentUser?.rol == "Maestro") {
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
@@ -64,9 +64,9 @@ fun HomeScreen(navController: NavController,
                 }
             }
 
-
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Botón Perfil
             Button(
                 onClick = { navController.navigate(Screen.Profile.route) },
                 modifier = Modifier.fillMaxWidth()
