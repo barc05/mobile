@@ -8,7 +8,6 @@ import retrofit2.http.*
 
 interface ApiService {
 
-    // --- USUARIOS ---
     @GET("usuarios")
     suspend fun getUsers(): List<User>
 
@@ -21,8 +20,7 @@ interface ApiService {
     @DELETE("usuarios/{id}")
     suspend fun deleteUser(@Path("id") id: String): DeleteResponse
 
-    // --- ARCHIVOS ---
-    // Subir archivo para un usuario específico
+
     @Multipart
     @POST("usuarios/{id}/archivos")
     suspend fun uploadFile(
@@ -39,7 +37,7 @@ interface ApiService {
     suspend fun getAllFiles(): List<UploadedFile>
 }
 
-// Respuestas auxiliares de tu API
+// Respuestas auxiliares de la Api
 data class UserResponse(val mensaje: String, val usuarios: List<User>?)
 data class DeleteResponse(val mensaje: String)
 data class FileResponse(val mensaje: String, val archivo: UploadedFile)
