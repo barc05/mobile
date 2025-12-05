@@ -2,6 +2,7 @@ package com.example.mattapp_proyect.repository
 
 import android.content.Context
 import android.net.Uri
+import com.example.mattapp_proyect.data.model.HistorialItem
 import com.example.mattapp_proyect.data.model.UploadedFile
 import com.example.mattapp_proyect.data.model.User
 import com.example.mattapp_proyect.data.remote.ApiClient
@@ -36,5 +37,9 @@ class UserRepository {
     suspend fun uploadFile(context: Context, userId: String, uri: Uri) {
         val part = uriToMultipart(context, uri, "archivo")
         api.uploadFile(userId, part)
+    }
+
+    suspend fun getHistorial(userId: String): List<HistorialItem> {
+        return api.getHistorial(userId)
     }
 }

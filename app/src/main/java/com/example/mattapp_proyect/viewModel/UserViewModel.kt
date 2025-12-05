@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mattapp_proyect.data.model.HistorialItem
 import com.example.mattapp_proyect.data.model.UploadedFile
 import com.example.mattapp_proyect.data.model.User
 import com.example.mattapp_proyect.repository.UserRepository
@@ -30,6 +31,9 @@ class UserViewModel : ViewModel() {
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
+    private val _historial = MutableStateFlow<List<HistorialItem>>(emptyList())
+    val historial: StateFlow<List<HistorialItem>> = _historial.asStateFlow()
 
     // --- FUNCIONES ---
 
@@ -115,5 +119,23 @@ class UserViewModel : ViewModel() {
     fun logout() {
         _loggedInUser.value = null
         _files.value = emptyList()
+    }
+
+    fun fetchHistorial() {
+        val currentUser = _loggedInUser.value ?: return
+        val userId = currentUser.id ?: return
+
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                // Llamada al repositorio
+                _historial.value = repo.getHistorial(userId)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                // Opcional: Manejar error en _errorMessage
+            } finally {
+                _loading.value = false
+            }
+        }
     }
 }

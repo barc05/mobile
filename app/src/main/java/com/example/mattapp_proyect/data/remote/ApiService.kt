@@ -1,5 +1,6 @@
 package com.example.mattapp_proyect.data.remote
 
+import com.example.mattapp_proyect.data.model.HistorialItem
 import com.example.mattapp_proyect.data.model.UploadedFile
 import com.example.mattapp_proyect.data.model.User
 import okhttp3.MultipartBody
@@ -10,6 +11,9 @@ interface ApiService {
     // --- USUARIOS ---
     @GET("usuarios")
     suspend fun getUsers(): List<User>
+
+    @GET("usuarios/{id}/historial")
+    suspend fun getHistorial(@Path("id") userId: String): List<HistorialItem>
 
     @POST("usuarios")
     suspend fun createUser(@Body user: User): UserResponse
