@@ -7,7 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object ApiClient {
-    // Apunta a tu servidor Node.js (10.0.2.2 es localhost para el emulador)
+    
     private const val BASE_URL = "http://10.0.2.2:3000/"
 
     private val logging = HttpLoggingInterceptor().apply {
