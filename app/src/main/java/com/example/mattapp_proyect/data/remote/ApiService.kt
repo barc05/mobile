@@ -15,7 +15,10 @@ interface ApiService {
     suspend fun getUsers(): List<User>
 
     @GET("usuarios/{id}/historial")
-    suspend fun getHistorial(@Path("id") userId: String): List<HistorialItem>
+    suspend fun getHistorial(
+        @Path("id") userId: String,
+        @Header("Authorization") token: String 
+    ): List<HistorialItem>
 
     @POST("usuarios")
     suspend fun createUser(@Body user: User): UserResponse
@@ -23,18 +26,20 @@ interface ApiService {
     @DELETE("usuarios/{id}")
     suspend fun deleteUser(@Path("id") id: String): DeleteResponse
 
-
     @Multipart
-    @POST("usuarios/{id}/archivos") // <-- Nueva ruta
+    @POST("usuarios/{id}/archivos")
     suspend fun uploadFile(
-        @Path("id") userId: String, // <-- Añadir Path para el ID
+        @Path("id") userId: String,
         @Part file: MultipartBody.Part,
-        @Part("descripcion") descripcion: RequestBody,
+        @Header("Authorization") token: String 
     ): Response<FileResponse>
 
     // Obtener archivos de un usuario
     @GET("usuarios/{id}/archivos")
-    suspend fun getUserFiles(@Path("id") userId: String): List<UploadedFile>
+    suspend fun getUserFiles(
+        @Path("id") userId: String,
+        @Header("Authorization") token: String
+    ): List<UploadedFile>
 
     // Obtener todos los archivos (para el alumno)
     @GET("archivos")
