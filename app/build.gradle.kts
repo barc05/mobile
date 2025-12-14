@@ -42,6 +42,8 @@ android {
 
 dependencies {
 
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
     implementation(libs.androidx.junit.ktx)
     // JUnit5
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
