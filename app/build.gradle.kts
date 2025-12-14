@@ -43,8 +43,6 @@ android {
 
 dependencies {
 
-    implementation("androidx.datastore:datastore-preferences:1.0.0")
-
     implementation(platform("io.github.jan-tennert.supabase:bom:3.0.0"))
     implementation("io.github.jan-tennert.supabase:postgrest-kt") // Base de Datos
     implementation("io.github.jan-tennert.supabase:storage-kt")   // Archivos (Imágenes/PDF)
