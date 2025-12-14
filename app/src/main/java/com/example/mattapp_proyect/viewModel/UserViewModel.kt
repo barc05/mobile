@@ -90,12 +90,17 @@ class UserViewModel : ViewModel() {
 
     fun fetchUploadedFiles() {
         val currentUser = _loggedInUser.value ?: return
+        val token = _userToken.value
+        
+        if (token == null) return
+
         viewModelScope.launch {
             _loading.value = true
             try {
-                _files.value = repo.getFilesForUser(currentUser.id, currentUser.rol)
+                _files.value = repo.getFilesForUser(currentUser.id, currentUser.rol, token)
             } catch (e: Exception) {
                 e.printStackTrace()
+                _errorMessage.value = "Error al cargar archivos"
             } finally {
                 _loading.value = false
             }
@@ -105,15 +110,21 @@ class UserViewModel : ViewModel() {
     fun addUploadedFile(context: Context, uri: Uri) {
         val currentUser = _loggedInUser.value ?: return
         val userId = currentUser.id ?: return
+        val token = _userToken.value
+
+        if (token == null) {
+            _errorMessage.value = "Error: Sesión no válida, por favor reloguearse."
+            return
+        }
 
         viewModelScope.launch {
             _loading.value = true
             try {
-                repo.uploadFile(context, userId, uri)
-                fetchUploadedFiles() // Recargar lista
+                repo.uploadFile(context, userId, uri, token)
+                fetchUploadedFiles() 
             } catch (e: Exception) {
                 e.printStackTrace()
-                _errorMessage.value = "Error al subir archivo"
+                _errorMessage.value = "Error al subir archivo: ${e.message}"
             } finally {
                 _loading.value = false
             }
@@ -128,14 +139,17 @@ class UserViewModel : ViewModel() {
     fun fetchHistorial() {
         val currentUser = _loggedInUser.value ?: return
         val userId = currentUser.id ?: return
+        val token = _userToken.value
+
+        if (token == null) return
 
         viewModelScope.launch {
             _loading.value = true
             try {
-                // Llamada al repositorio
-                _historial.value = repo.getHistorial(userId)
+                _historial.value = repo.getHistorial(userId, token)
             } catch (e: Exception) {
                 e.printStackTrace()
+                _errorMessage.value = "Error al obtener historial"
             } finally {
                 _loading.value = false
             }
