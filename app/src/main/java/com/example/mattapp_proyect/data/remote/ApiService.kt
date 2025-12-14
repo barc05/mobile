@@ -3,6 +3,9 @@ package com.example.mattapp_proyect.data.remote
 import com.example.mattapp_proyect.data.model.HistorialItem
 import com.example.mattapp_proyect.data.model.UploadedFile
 import com.example.mattapp_proyect.data.model.User
+import com.example.mattapp_proyect.data.model.AuthResponse
+import com.example.mattapp_proyect.data.model.LoginRequest
+import com.example.mattapp_proyect.data.model.RegisterRequest
 import okhttp3.MultipartBody
 import retrofit2.http.*
 
