@@ -45,21 +45,25 @@ class UserRepository {
     // --- Archivos ---
 
     // Lógica para decidir qué archivos mostrar según el rol
-    suspend fun getFilesForUser(userId: String?, rol: String): List<UploadedFile> {
+    suspend fun getFilesForUser(userId: String?, rol: String, token: String): List<UploadedFile> {
         return if (rol == "Alumno") {
-            api.getAllFiles()
+            api.getAllFiles() 
         } else {
-            if (userId != null) api.getUserFiles(userId) else emptyList()
+            if (userId != null) {
+                api.getUserFiles(userId, "Bearer $token")
+            } else {
+                emptyList()
+            }
         }
     }
 
     // Subir archivo usando MultipartUtils
-    suspend fun uploadFile(context: Context, userId: String, uri: Uri) {
+    suspend fun uploadFile(context: Context, userId: String, uri: Uri, token: String) {
         val part = uriToMultipart(context, uri, "archivo")
-        api.uploadFile(userId, part)
+        api.uploadFile(userId, part, "Bearer $token") 
     }
 
-    suspend fun getHistorial(userId: String): List<HistorialItem> {
-        return api.getHistorial(userId)
+    suspend fun getHistorial(userId: String, token: String): List<HistorialItem> {
+        return api.getHistorial(userId, "Bearer $token")
     }
 }
