@@ -6,6 +6,9 @@ import com.example.mattapp_proyect.data.model.HistorialItem
 import com.example.mattapp_proyect.data.model.UploadedFile
 import com.example.mattapp_proyect.data.model.User
 import com.example.mattapp_proyect.data.remote.ApiClient
+import com.example.mattapp_proyect.data.model.AuthResponse
+import com.example.mattapp_proyect.data.model.LoginRequest
+import com.example.mattapp_proyect.data.model.RegisterRequest
 import com.example.mattapp_proyect.utils.uriToMultipart
 
 class UserRepository {
