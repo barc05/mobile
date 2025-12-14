@@ -40,12 +40,13 @@ interface ApiService {
     @GET("archivos")
     suspend fun getAllFiles(): List<UploadedFile>
 
+    // Registro y Inicio de sesion
     @POST("auth/register")
     suspend fun registerUser(@Body registerRequest: RegisterRequest): Response<AuthResponse>
     
     @POST("auth/login")
     suspend fun loginUser(@Body loginRequest: LoginRequest): Response<AuthResponse>
-    // *Necesitas crear los modelos RegisterRequest, LoginRequest y AuthResponse.
+    
 }
 
     
