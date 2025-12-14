@@ -22,11 +22,12 @@ interface ApiService {
 
 
     @Multipart
-    @POST("usuarios/{id}/archivos")
+    @POST("usuarios/{id}/archivos") // <-- Nueva ruta
     suspend fun uploadFile(
-        @Path("id") userId: String,
-        @Part archivo: MultipartBody.Part
-    ): FileResponse
+        @Path("id") userId: String, // <-- Añadir Path para el ID
+        @Part file: MultipartBody.Part,
+        @Part("descripcion") descripcion: RequestBody,
+    ): Response<FileResponse>
 
     // Obtener archivos de un usuario
     @GET("usuarios/{id}/archivos")
@@ -35,7 +36,16 @@ interface ApiService {
     // Obtener todos los archivos (para el alumno)
     @GET("archivos")
     suspend fun getAllFiles(): List<UploadedFile>
+
+    @POST("auth/register")
+    suspend fun registerUser(@Body registerRequest: RegisterRequest): Response<AuthResponse>
+    
+    @POST("auth/login")
+    suspend fun loginUser(@Body loginRequest: LoginRequest): Response<AuthResponse>
+    // *Necesitas crear los modelos RegisterRequest, LoginRequest y AuthResponse.
 }
+
+    
 
 // Respuestas auxiliares de la Api
 data class UserResponse(val mensaje: String, val usuarios: List<User>?)
