@@ -22,9 +22,11 @@ data class AuthUiState(
     val error: String? = null
 )
 
-class UserViewModel : ViewModel() {
+class UserViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repo = UserRepository()
+
+    private val sessionManager = SessionManager(application.applicationContext)
 
     private val _authState = MutableStateFlow(AuthUiState())
     val authState: StateFlow<AuthUiState> = _authState.asStateFlow()
@@ -46,6 +48,23 @@ class UserViewModel : ViewModel() {
 
     private val _historial = MutableStateFlow<List<HistorialItem>>(emptyList())
     val historial: StateFlow<List<HistorialItem>> = _historial.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            sessionManager.authToken.collect { token ->
+                _userToken.value = token
+            }
+        }
+        viewModelScope.launch {
+            sessionManager.user.collect { savedUser ->
+                _loggedInUser.value = savedUser
+                if (savedUser != null) {
+                    _authState.value = AuthUiState(isAuthenticated = true, user = savedUser)
+                    fetchUploadedFiles()
+                }
+            }
+        }
+    }
 
 
     fun loginUsuario(correo: String, contraseña: String) {
@@ -94,13 +113,20 @@ class UserViewModel : ViewModel() {
     private fun saveSessionData(user: User, token: String) {
         _loggedInUser.value = user
         _userToken.value = token
+        
+        viewModelScope.launch {
+            sessionManager.saveSession(token, user)
+        }
     }
 
     fun logout() {
-        _loggedInUser.value = null
-        _userToken.value = null
-        _files.value = emptyList()
-        _authState.value = AuthUiState()
+        viewModelScope.launch {
+            sessionManager.clearSession() // Borra del disco
+            _loggedInUser.value = null
+            _userToken.value = null
+            _files.value = emptyList()
+            _authState.value = AuthUiState()
+        }
     }
 
     // Funciones con token
