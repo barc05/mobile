@@ -20,6 +20,26 @@ class UserRepository {
         return response.usuarios?.firstOrNull()
     }
 
+    suspend fun registerUser(request: RegisterRequest): AuthResponse? {
+        val response = api.registerUser(request) 
+        
+        return if (response.isSuccessful) {
+            response.body()
+        } else {
+            null
+        }
+    }
+
+    suspend fun loginUser(request: LoginRequest): AuthResponse? {
+        val response = api.loginUser(request)
+        
+        return if (response.isSuccessful) {
+            response.body()
+        } else {
+            null
+        }
+    }
+
     suspend fun deleteUser(id: String) = api.deleteUser(id)
 
     // --- Archivos ---
