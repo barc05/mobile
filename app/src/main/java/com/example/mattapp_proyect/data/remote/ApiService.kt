@@ -8,6 +8,7 @@ import com.example.mattapp_proyect.data.model.LoginRequest
 import com.example.mattapp_proyect.data.model.RegisterRequest
 import okhttp3.MultipartBody
 import retrofit2.http.*
+import retrofit2.Response
 
 interface ApiService {
 
