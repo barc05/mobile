@@ -2,71 +2,88 @@ package com.example.mattapp_proyect.repository
 
 import android.content.Context
 import android.net.Uri
-import com.example.mattapp_proyect.data.model.HistorialItem
 import com.example.mattapp_proyect.data.model.UploadedFile
 import com.example.mattapp_proyect.data.model.User
-import com.example.mattapp_proyect.data.remote.ApiClient
-import com.example.mattapp_proyect.data.model.AuthResponse
-import com.example.mattapp_proyect.data.model.LoginRequest
-import com.example.mattapp_proyect.data.model.RegisterRequest
-import com.example.mattapp_proyect.utils.uriToMultipart
+import com.example.mattapp_proyect.data.remote.SupabaseClient
+import io.github.jan.supabase.gotrue.auth
+import io.github.jan.supabase.gotrue.providers.builtin.Email
+import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.storage.storage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.util.UUID
 
 class UserRepository {
 
-    private val api = ApiClient.service
+    private val supabase = SupabaseClient.client
 
-    // --- Usuarios ---
-    suspend fun getUsers(): List<User> = api.getUsers()
-
-    suspend fun createUser(user: User): User? {
-        val response = api.createUser(user)
-        return response.usuarios?.firstOrNull()
-    }
-
-    suspend fun registerUser(request: RegisterRequest): AuthResponse? {
-        val response = api.registerUser(request) 
-        
-        return if (response.isSuccessful) {
-            response.body()
-        } else {
-            null
+    suspend fun login(email: String, pass: String): Boolean {
+        return try {
+            supabase.auth.signInWith(Email) {
+                this.email = email
+                this.password = pass
+            }
+            true // Login exitoso
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
         }
     }
 
-    suspend fun loginUser(request: LoginRequest): AuthResponse? {
-        val response = api.loginUser(request)
-        
-        return if (response.isSuccessful) {
-            response.body()
-        } else {
-            null
+    suspend fun register(user: User, pass: String): Boolean {
+        return try {
+            supabase.auth.signUpWith(Email) {
+                this.email = user.correo
+                this.password = pass
+                this.data = mapOf("nombre" to user.nombre, "rol" to user.rol)
+            }
+            insertUserInPublicTable(user.copy(id = supabase.auth.currentUserOrNull()?.id))
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+    
+    private suspend fun insertUserInPublicTable(user: User) {
+        user.id?.let {
+             supabase.from("usuarios").insert(user)
         }
     }
 
-    suspend fun deleteUser(id: String) = api.deleteUser(id)
+    fun getCurrentUserEmail(): String? = supabase.auth.currentUserOrNull()?.email
+    fun getCurrentUserId(): String? = supabase.auth.currentUserOrNull()?.id
 
-    // --- Archivos ---
+    suspend fun logout() {
+        supabase.auth.signOut()
+    }
 
-    // Lógica para decidir qué archivos mostrar según el rol
-    suspend fun getFilesForUser(userId: String?, rol: String, token: String): List<UploadedFile> {
-        return if (rol == "Alumno") {
-            api.getAllFiles() 
-        } else {
-            if (userId != null) {
-                api.getUserFiles(userId, "Bearer $token")
-            } else {
-                emptyList()
+    suspend fun uploadFile(context: Context, uri: Uri): String? {
+        val currentUser = supabase.auth.currentUserOrNull() ?: return null
+        val fileName = "${currentUser.id}/${System.currentTimeMillis()}.jpg" // Ejemplo ruta
+        
+        return withContext(Dispatchers.IO) {
+            try {
+                val inputStream = context.contentResolver.openInputStream(uri)
+                val bytes = inputStream?.readBytes() ?: return@withContext null
+                
+                val bucket = supabase.storage.from("mattapp")
+                bucket.upload(fileName, bytes)
+                
+                // Devolver URL pública
+                bucket.publicUrl(fileName)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
             }
         }
     }
 
-    // Subir archivo usando MultipartUtils
-    suspend fun uploadFile(context: Context, userId: String, uri: Uri, token: String) {
-        val part = uriToMultipart(context, uri, "archivo")
-        api.uploadFile(userId, part, "Bearer $token") 
-    }
-
-    suspend fun getHistorial(userId: String, token: String): List<HistorialItem> {
-        return api.getHistorial(userId, "Bearer $token")
+    suspend fun getFiles(): List<UploadedFile> {
+        return try {
+            supabase.from("archivos").select().decodeList<UploadedFile>()
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 }
