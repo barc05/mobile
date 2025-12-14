@@ -4,192 +4,76 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import com.example.mattapp_proyect.data.local.SessionManager
-import com.example.mattapp_proyect.data.model.HistorialItem
-import com.example.mattapp_proyect.data.model.UploadedFile
 import com.example.mattapp_proyect.data.model.User
 import com.example.mattapp_proyect.repository.UserRepository
-import com.example.mattapp_proyect.data.model.LoginRequest
-import com.example.mattapp_proyect.data.model.RegisterRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import android.content.Context
-import android.net.Uri
 
+// Estado simplificado
 data class AuthUiState(
     val isLoading: Boolean = false,
     val isAuthenticated: Boolean = false,
-    val user: User? = null,
     val error: String? = null
 )
 
-class UserViewModel(application: Application) : AndroidViewModel(application) {
+class UserViewModel : ViewModel() {
 
     private val repo = UserRepository()
 
-    private val sessionManager = SessionManager(application.applicationContext)
-
     private val _authState = MutableStateFlow(AuthUiState())
-    val authState: StateFlow<AuthUiState> = _authState.asStateFlow()
-
-    private val _userToken = MutableStateFlow<String?>(null)
-    val userToken: StateFlow<String?> = _userToken.asStateFlow()
-
-    private val _loggedInUser = MutableStateFlow<User?>(null)
-    val loggedInUser: StateFlow<User?> = _loggedInUser.asStateFlow()
-
-    private val _files = MutableStateFlow<List<UploadedFile>>(emptyList())
-    val files: StateFlow<List<UploadedFile>> = _files.asStateFlow()
-
-    private val _loading = MutableStateFlow(false)
-    val loading: StateFlow<Boolean> = _loading.asStateFlow()
-
-    private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
-
-    private val _historial = MutableStateFlow<List<HistorialItem>>(emptyList())
-    val historial: StateFlow<List<HistorialItem>> = _historial.asStateFlow()
+    val authState: StateFlow<AuthUiState> = _authState
 
     init {
-        viewModelScope.launch {
-            sessionManager.authToken.collect { token ->
-                _userToken.value = token
-            }
-        }
-        viewModelScope.launch {
-            sessionManager.user.collect { savedUser ->
-                _loggedInUser.value = savedUser
-                if (savedUser != null) {
-                    _authState.value = AuthUiState(isAuthenticated = true, user = savedUser)
-                    fetchUploadedFiles()
-                }
-            }
+        val currentUserId = repo.getCurrentUserId()
+        if (currentUserId != null) {
+            _authState.value = AuthUiState(isAuthenticated = true)
         }
     }
 
-
-    fun loginUsuario(correo: String, contraseña: String) {
+    fun login(email: String, pass: String) {
         viewModelScope.launch {
             _authState.value = AuthUiState(isLoading = true)
-            val request = LoginRequest(correo, contraseña)
-            try {
-                val result = repo.loginUser(request)
-                if (result != null && result.usuario != null && result.token != null) {
-                    // Éxito
-                    _authState.value = AuthUiState(isAuthenticated = true, user = result.usuario)
-                    saveSessionData(result.usuario, result.token)
-                    fetchUploadedFiles()
-                } else {
-                    _authState.value = AuthUiState(error = result?.mensaje ?: "Credenciales incorrectas")
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _authState.value = AuthUiState(error = "Error de conexión: ${e.message}")
-            } finally {
-               _loading.value = false
+            val success = repo.login(email, pass)
+            if (success) {
+                _authState.value = AuthUiState(isAuthenticated = true)
+            } else {
+                _authState.value = AuthUiState(error = "Error al iniciar sesión")
             }
         }
     }
 
-    fun registraUsuario(nombre: String, correo: String, contraseña: String, rol: String) {
+    fun register(nombre: String, email: String, pass: String, rol: String) {
         viewModelScope.launch {
             _authState.value = AuthUiState(isLoading = true)
-            val request = RegisterRequest(correo, contraseña, nombre, rol)
-            try {
-                val result = repo.registerUser(request)
-                if (result != null && result.usuario != null && result.token != null) {
-                    _authState.value = AuthUiState(isAuthenticated = true, user = result.usuario)
-                    saveSessionData(result.usuario, result.token)
-                    fetchUploadedFiles()
-                } else {
-                    _authState.value = AuthUiState(error = result?.mensaje ?: "Error al registrar")
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _authState.value = AuthUiState(error = "Error de conexión: ${e.message}")
+            val newUser = User(nombre = nombre, correo = email, rol = rol)
+            val success = repo.register(newUser, pass)
+            
+            if (success) {
+                _authState.value = AuthUiState(isAuthenticated = true)
+            } else {
+                _authState.value = AuthUiState(error = "Error al registrar")
             }
         }
     }
-
-    private fun saveSessionData(user: User, token: String) {
-        _loggedInUser.value = user
-        _userToken.value = token
-        
+    
+    fun uploadFile(context: Context, uri: Uri) {
         viewModelScope.launch {
-            sessionManager.saveSession(token, user)
+            _authState.value = AuthUiState(isLoading = true)
+            val url = repo.uploadFile(context, uri)
+            if (url != null) {
+                println("Archivo subido: $url")
+            } else {
+                _authState.value = AuthUiState(error = "Error al subir archivo")
+            }
+            _authState.value = AuthUiState(isLoading = false, isAuthenticated = true)
         }
     }
 
     fun logout() {
         viewModelScope.launch {
-            sessionManager.clearSession() // Borra del disco
-            _loggedInUser.value = null
-            _userToken.value = null
-            _files.value = emptyList()
-            _authState.value = AuthUiState()
-        }
-    }
-
-    // Funciones con token
-    fun fetchUploadedFiles() {
-        val currentUser = _loggedInUser.value ?: return
-        val token = _userToken.value ?: return
-
-        viewModelScope.launch {
-            _loading.value = true
-            try {
-                _files.value = repo.getFilesForUser(currentUser.id, currentUser.rol, token)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _errorMessage.value = "Error al cargar archivos"
-            } finally {
-                _loading.value = false
-            }
-        }
-    }
-
-    fun addUploadedFile(context: Context, uri: Uri) {
-        val currentUser = _loggedInUser.value ?: return
-        val userId = currentUser.id ?: return
-        val token = _userToken.value
-
-        if (token == null) {
-            _errorMessage.value = "Sesión no válida"
-            return
-        }
-
-        viewModelScope.launch {
-            _loading.value = true
-            try {
-                repo.uploadFile(context, userId, uri, token)
-                fetchUploadedFiles()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _errorMessage.value = "Error al subir: ${e.message}"
-            } finally {
-                _loading.value = false
-            }
-        }
-    }
-
-    fun fetchHistorial() {
-        val currentUser = _loggedInUser.value ?: return
-        val userId = currentUser.id ?: return
-        val token = _userToken.value ?: return
-
-        viewModelScope.launch {
-            _loading.value = true
-            try {
-                _historial.value = repo.getHistorial(userId, token)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            } finally {
-                _loading.value = false
-            }
+            repo.logout()
+            _authState.value = AuthUiState(isAuthenticated = false)
         }
     }
 }
