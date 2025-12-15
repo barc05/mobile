@@ -46,7 +46,7 @@ dependencies {
     implementation(platform("io.github.jan-tennert.supabase:bom:3.0.0"))
     implementation("io.github.jan-tennert.supabase:postgrest-kt") // Base de Datos
     implementation("io.github.jan-tennert.supabase:storage-kt")   // Archivos (Imágenes/PDF)
-    implementation("io.github.jan-tennert.supabase:gotrue-kt")    // Autenticación (Login/Registro)
+    implementation("io.github.jan-tennert.supabase:auth-kt")  // Autenticación (Login/Registro)
     
     implementation("io.ktor:ktor-client-android:3.0.0")
     
