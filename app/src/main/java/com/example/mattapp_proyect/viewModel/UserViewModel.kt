@@ -2,15 +2,18 @@ package com.example.mattapp_proyect.viewModel
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mattapp_proyect.data.model.HistorialItem
+import com.example.mattapp_proyect.data.model.UploadedFile
 import com.example.mattapp_proyect.data.model.User
 import com.example.mattapp_proyect.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-// Estado simplificado
 data class AuthUiState(
     val isLoading: Boolean = false,
     val isAuthenticated: Boolean = false,
@@ -21,59 +24,136 @@ class UserViewModel : ViewModel() {
 
     private val repo = UserRepository()
 
+    private val _loggedInUser = MutableStateFlow<User?>(null)
+    val loggedInUser: StateFlow<User?> = _loggedInUser.asStateFlow()
+
+    private val _files = MutableStateFlow<List<UploadedFile>>(emptyList())
+    val files: StateFlow<List<UploadedFile>> = _files.asStateFlow()
+
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading.asStateFlow()
+
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
+    private val _historial = MutableStateFlow<List<HistorialItem>>(emptyList())
+    val historial: StateFlow<List<HistorialItem>> = _historial.asStateFlow()
+
     private val _authState = MutableStateFlow(AuthUiState())
-    val authState: StateFlow<AuthUiState> = _authState
+    val authState: StateFlow<AuthUiState> = _authState.asStateFlow()
 
     init {
-        val currentUserId = repo.getCurrentUserId()
-        if (currentUserId != null) {
-            _authState.value = AuthUiState(isAuthenticated = true)
-        }
-    }
-
-    fun login(email: String, pass: String) {
         viewModelScope.launch {
-            _authState.value = AuthUiState(isLoading = true)
-            val success = repo.login(email, pass)
-            if (success) {
-                _authState.value = AuthUiState(isAuthenticated = true)
-            } else {
-                _authState.value = AuthUiState(error = "Error al iniciar sesión")
+            val userId = repo.getCurrentUserId()
+            if (userId != null) {
+                val user = repo.getCurrentUser()
+                if (user != null) {
+                    _loggedInUser.value = user
+                    _authState.value = AuthUiState(isAuthenticated = true)
+                    fetchUploadedFiles()
+                }
             }
         }
     }
 
-    fun register(nombre: String, email: String, pass: String, rol: String) {
+    // Funciones de Autenticación (Conectadas a Supabase) 
+
+    fun loginUsuario(correo: String, pass: String) {
         viewModelScope.launch {
-            _authState.value = AuthUiState(isLoading = true)
-            val newUser = User(nombre = nombre, correo = email, rol = rol)
+            _loading.value = true
+            _errorMessage.value = null
+            
+            val success = repo.login(correo, pass)
+            
+            if (success) {
+                val user = repo.getCurrentUser()
+                if (user != null) {
+                    _loggedInUser.value = user
+                    _authState.value = AuthUiState(isAuthenticated = true)
+                    fetchUploadedFiles()
+                } else {
+                    _errorMessage.value = "Error: Usuario no encontrado en base de datos"
+                }
+            } else {
+                _errorMessage.value = "Error al iniciar sesión. Verifica credenciales."
+            }
+            _loading.value = false
+        }
+    }
+
+    fun registraUsuario(nombre: String, correo: String, pass: String, rol: String) {
+        viewModelScope.launch {
+            _loading.value = true
+            _errorMessage.value = null
+            val newUser = User(nombre = nombre, correo = correo, rol = rol)
+            
+            // Registramos en Supabase
             val success = repo.register(newUser, pass)
             
             if (success) {
-                _authState.value = AuthUiState(isAuthenticated = true)
+                // Intentamos loguear automáticamente recuperando el usuario
+                val user = repo.getCurrentUser()
+                if (user != null) {
+                    _loggedInUser.value = user
+                    _authState.value = AuthUiState(isAuthenticated = true)
+                }
             } else {
-                _authState.value = AuthUiState(error = "Error al registrar")
+                _errorMessage.value = "Error al registrar usuario."
             }
-        }
-    }
-    
-    fun uploadFile(context: Context, uri: Uri) {
-        viewModelScope.launch {
-            _authState.value = AuthUiState(isLoading = true)
-            val url = repo.uploadFile(context, uri)
-            if (url != null) {
-                println("Archivo subido: $url")
-            } else {
-                _authState.value = AuthUiState(error = "Error al subir archivo")
-            }
-            _authState.value = AuthUiState(isLoading = false, isAuthenticated = true)
+            _loading.value = false
         }
     }
 
     fun logout() {
         viewModelScope.launch {
             repo.logout()
+            _loggedInUser.value = null
+            _files.value = emptyList()
+            _historial.value = emptyList()
             _authState.value = AuthUiState(isAuthenticated = false)
+        }
+    }
+
+    //  Funciones de Datos 
+
+    fun fetchUploadedFiles() {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                // Obtener archivos de Supabase
+                _files.value = repo.getFiles()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _errorMessage.value = "Error al cargar archivos"
+            }
+            _loading.value = false
+        }
+    }
+
+    fun addUploadedFile(context: Context, uri: Uri) {
+        viewModelScope.launch {
+            _loading.value = true
+            // Subir archivo a Supabase Storage
+            val url = repo.uploadFile(context, uri)
+            if (url != null) {
+                fetchUploadedFiles() // Recargar lista si tuvo éxito
+            } else {
+                _errorMessage.value = "Error al subir archivo"
+            }
+            _loading.value = false
+        }
+    }
+
+    fun fetchHistorial() {
+        val userId = _loggedInUser.value?.id ?: return
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                _historial.value = repo.getHistorial(userId)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            _loading.value = false
         }
     }
 }
