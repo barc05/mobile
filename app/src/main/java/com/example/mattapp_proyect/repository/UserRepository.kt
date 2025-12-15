@@ -2,6 +2,7 @@ package com.example.mattapp_proyect.repository
 
 import android.content.Context
 import android.net.Uri
+import com.example.mattapp_proyect.data.model.HistorialItem
 import com.example.mattapp_proyect.data.model.UploadedFile
 import com.example.mattapp_proyect.data.model.User
 import com.example.mattapp_proyect.data.remote.SupabaseClient
@@ -17,6 +18,8 @@ import kotlinx.serialization.json.put
 class UserRepository {
 
     private val supabase = SupabaseClient.client
+
+    // --- AUTENTICACIÓN ---
 
     suspend fun login(email: String, pass: String): Boolean {
         return try {
@@ -41,12 +44,11 @@ class UserRepository {
                     put("rol", user.rol)
                 }
             }
-
+            // Copiar ID de Auth a la tabla de usuarios
             val userId = supabase.auth.currentUserOrNull()?.id
             if (userId != null) {
                 insertUserInPublicTable(user.copy(id = userId))
             }
-
             true
         } catch (e: Exception) {
             e.printStackTrace()
@@ -55,17 +57,36 @@ class UserRepository {
     }
 
     private suspend fun insertUserInPublicTable(user: User) {
-        user.id?.let {
+        try {
+            // "usuarios" debe ser el nombre de tu tabla en Supabase
             supabase.from("usuarios").insert(user)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    fun getCurrentUserEmail(): String? = supabase.auth.currentUserOrNull()?.email
     fun getCurrentUserId(): String? = supabase.auth.currentUserOrNull()?.id
+
+    // Obtener el objeto User completo desde la base de datos
+    suspend fun getCurrentUser(): User? {
+        val id = getCurrentUserId() ?: return null
+        return try {
+            supabase.from("usuarios").select {
+                filter {
+                    eq("id", id)
+                }
+            }.decodeSingleOrNull<User>()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
 
     suspend fun logout() {
         supabase.auth.signOut()
     }
+
+    // --- ARCHIVOS (STORAGE) ---
 
     suspend fun uploadFile(context: Context, uri: Uri): String? {
         val currentUser = supabase.auth.currentUserOrNull() ?: return null
@@ -78,7 +99,6 @@ class UserRepository {
 
                 val bucket = supabase.storage.from("mattapp")
                 bucket.upload(fileName, bytes)
-
                 bucket.publicUrl(fileName)
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -87,9 +107,23 @@ class UserRepository {
         }
     }
 
+    // --- BASE DE DATOS (CONSULTAS) ---
+
     suspend fun getFiles(): List<UploadedFile> {
         return try {
             supabase.from("archivos").select().decodeList<UploadedFile>()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun getHistorial(userId: String): List<HistorialItem> {
+        return try {
+            supabase.from("historial").select {
+                filter {
+                    eq("usuarioId", userId) // Ajusta "usuarioId" a tu columna real
+                }
+            }.decodeList<HistorialItem>()
         } catch (e: Exception) {
             emptyList()
         }
