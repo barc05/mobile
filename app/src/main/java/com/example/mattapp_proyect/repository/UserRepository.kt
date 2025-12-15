@@ -5,13 +5,14 @@ import android.net.Uri
 import com.example.mattapp_proyect.data.model.UploadedFile
 import com.example.mattapp_proyect.data.model.User
 import com.example.mattapp_proyect.data.remote.SupabaseClient
-import io.github.jan.supabase.gotrue.auth
-import io.github.jan.supabase.gotrue.providers.builtin.Email
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.storage.storage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.util.UUID
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 class UserRepository {
 
@@ -23,7 +24,7 @@ class UserRepository {
                 this.email = email
                 this.password = pass
             }
-            true // Login exitoso
+            true
         } catch (e: Exception) {
             e.printStackTrace()
             false
@@ -35,19 +36,27 @@ class UserRepository {
             supabase.auth.signUpWith(Email) {
                 this.email = user.correo
                 this.password = pass
-                this.data = mapOf("nombre" to user.nombre, "rol" to user.rol)
+                this.data = buildJsonObject {
+                    put("nombre", user.nombre)
+                    put("rol", user.rol)
+                }
             }
-            insertUserInPublicTable(user.copy(id = supabase.auth.currentUserOrNull()?.id))
+
+            val userId = supabase.auth.currentUserOrNull()?.id
+            if (userId != null) {
+                insertUserInPublicTable(user.copy(id = userId))
+            }
+
             true
         } catch (e: Exception) {
             e.printStackTrace()
             false
         }
     }
-    
+
     private suspend fun insertUserInPublicTable(user: User) {
         user.id?.let {
-             supabase.from("usuarios").insert(user)
+            supabase.from("usuarios").insert(user)
         }
     }
 
@@ -60,17 +69,16 @@ class UserRepository {
 
     suspend fun uploadFile(context: Context, uri: Uri): String? {
         val currentUser = supabase.auth.currentUserOrNull() ?: return null
-        val fileName = "${currentUser.id}/${System.currentTimeMillis()}.jpg" // Ejemplo ruta
-        
+        val fileName = "${currentUser.id}/${System.currentTimeMillis()}.jpg"
+
         return withContext(Dispatchers.IO) {
             try {
                 val inputStream = context.contentResolver.openInputStream(uri)
                 val bytes = inputStream?.readBytes() ?: return@withContext null
-                
+
                 val bucket = supabase.storage.from("mattapp")
                 bucket.upload(fileName, bytes)
-                
-                // Devolver URL pública
+
                 bucket.publicUrl(fileName)
             } catch (e: Exception) {
                 e.printStackTrace()
