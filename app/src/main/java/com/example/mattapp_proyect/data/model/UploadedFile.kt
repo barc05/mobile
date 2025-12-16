@@ -12,7 +12,7 @@ data class UploadedFile (
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
 
-    val usuario_Id: String,
+    val usuario_id: String,
     val nombre: String,
     val url: String // <-- OK
 )

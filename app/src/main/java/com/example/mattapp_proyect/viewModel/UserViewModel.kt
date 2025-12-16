@@ -145,7 +145,7 @@ class UserViewModel : ViewModel() {
 
                 // 2. Crear el objeto con los datos
                 val nuevoArchivo = UploadedFile(
-                    usuario_Id = idUsuario, // <-- USAMOS EL NUEVO NOMBRE y el ID
+                    usuario_id = idUsuario,
                     nombre = "Archivo Nuevo",
                     // Ya no se incluye 'materia'
                     url = urlGenerada
