@@ -22,9 +22,7 @@ fun UploadScreen(
     userViewModel: UserViewModel
 ) {
     var fileUri by remember { mutableStateOf<Uri?>(null) }
-    // La nueva API no usa nombre/materia, pero mantenemos los campos visualmente si quieres
     var nombre by remember { mutableStateOf("") }
-    var materia by remember { mutableStateOf("") }
 
     val context = LocalContext.current // Necesario para leer el archivo
 
@@ -71,7 +69,7 @@ fun UploadScreen(
             OutlinedTextField(
                 value = nombre,
                 onValueChange = { nombre = it },
-                label = { Text("Nombre (Opcional)") },
+                label = { Text("Nombre del archivo") },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -79,14 +77,15 @@ fun UploadScreen(
 
             Button(
                 onClick = {
-                    if (fileUri != null) {
-                        // CORRECCIÓN: Llamada a la nueva firma addUploadedFile(context, uri)
-                        userViewModel.addUploadedFile(context, fileUri!!)
-                        navController.navigateUp()
-                    }
+                    userViewModel.addUploadedFile(context, fileUri!!, nombre)
+
+                    fileUri = null
+                    nombre = ""
+                    navController.navigateUp()
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = fileUri != null
+
+                enabled = fileUri != null && nombre.isNotBlank()
             ) {
                 Text("Subir")
             }

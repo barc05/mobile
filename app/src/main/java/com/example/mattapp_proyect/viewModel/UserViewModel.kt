@@ -132,7 +132,7 @@ class UserViewModel : ViewModel() {
         }
     }
 
-    fun addUploadedFile(context: Context, uri: Uri) {
+    fun addUploadedFile(context: Context, uri: Uri, nombreArchivo: String) {
         viewModelScope.launch {
             _loading.value = true
 
@@ -140,14 +140,12 @@ class UserViewModel : ViewModel() {
             val urlGenerada = repo.uploadFile(context, uri)
 
             if (urlGenerada != null) {
-                // CAMBIO CRUCIAL: OBTENEMOS EL ID DEL USUARIO, NO EL CORREO
-                val idUsuario = _loggedInUser.value?.id ?: return@launch // Usamos el ID de User.kt
+                // Asegúrate que 'id' en tu modelo User sea un String (UUID)
+                val idUsuario = _loggedInUser.value?.id ?: return@launch
 
-                // 2. Crear el objeto con los datos
                 val nuevoArchivo = UploadedFile(
                     usuario_id = idUsuario,
-                    nombre = "Archivo Nuevo",
-                    // Ya no se incluye 'materia'
+                    nombre = nombreArchivo, // <-- AHORA USA EL PARÁMETRO
                     url = urlGenerada
                 )
 

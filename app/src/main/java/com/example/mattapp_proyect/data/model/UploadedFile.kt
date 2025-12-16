@@ -9,8 +9,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class UploadedFile (
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
 
     val usuario_id: String,
     val nombre: String,
