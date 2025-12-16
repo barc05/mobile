@@ -41,7 +41,7 @@ class UserViewModel : ViewModel() {
     private val _historial = MutableStateFlow<List<HistorialItem>>(emptyList())
     val historial: StateFlow<List<HistorialItem>> = _historial.asStateFlow()
 
-    // Estado para navegación de Login/Registro
+
     private val _authState = MutableStateFlow(AuthUiState())
     val authState: StateFlow<AuthUiState> = _authState.asStateFlow()
 
@@ -136,24 +136,23 @@ class UserViewModel : ViewModel() {
         viewModelScope.launch {
             _loading.value = true
 
-            // 1. Subir el archivo físico a la nube
+
             val urlGenerada = repo.uploadFile(context, uri)
 
             if (urlGenerada != null) {
-                // Asegúrate que 'id' en tu modelo User sea un String (UUID)
+
                 val idUsuario = _loggedInUser.value?.id ?: return@launch
 
                 val nuevoArchivo = UploadedFile(
                     usuario_id = idUsuario,
-                    nombre = nombreArchivo, // <-- AHORA USA EL PARÁMETRO
+                    nombre = nombreArchivo,
                     url = urlGenerada
                 )
 
-                // 3. GUARDAR EN LA BASE DE DATOS
                 val guardadoExitoso = repo.saveFileRecord(nuevoArchivo)
 
                 if (guardadoExitoso) {
-                    fetchUploadedFiles() // Recargar la lista
+                    fetchUploadedFiles()
                 } else {
                     _errorMessage.value = "Error al guardar en la base de datos"
                 }
@@ -186,14 +185,13 @@ class UserViewModel : ViewModel() {
             val currentUser = _loggedInUser.value
 
             if (currentUser?.id != null) {
-                // 1. Subir la imagen al Storage (reutilizamos tu función existente)
+
                 val url = repo.uploadFile(context, uri)
 
                 if (url != null) {
-                    // 2. IMPORTANTE: Guardar el link en la tabla de usuarios
+
                     repo.updateUserPhotoUrl(currentUser.id, url)
 
-                    // 3. Actualizar la app inmediatamente para que no se borre la foto
                     _loggedInUser.value = currentUser.copy(fotoUri = url)
                 } else {
                     _errorMessage.value = "Error al subir la imagen"

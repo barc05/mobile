@@ -24,7 +24,6 @@ import com.example.mattapp_proyect.viewModel.UserViewModel
 @Composable
 fun ProfileScreen(navController: NavController, userViewModel: UserViewModel) {
 
-    // Observar usuario con StateFlow
     val currentUser by userViewModel.loggedInUser.collectAsState()
     var imageUri by remember { mutableStateOf<Uri?>(null) }
 
@@ -82,12 +81,9 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel) {
                 Text("🖼️ Cambiar Foto")
             }
 
-            // Botón Guardar Foto (CORREGIDO)
             if (imageUri != null) {
                 Button(onClick = {
-                    // --- CAMBIO AQUÍ ---
-                    // Antes usabas: userViewModel.addUploadedFile(...)
-                    // AHORA USA ESTO:
+
                     userViewModel.updateUserProfilePhoto(navController.context, imageUri!!)
 
                     imageUri = null

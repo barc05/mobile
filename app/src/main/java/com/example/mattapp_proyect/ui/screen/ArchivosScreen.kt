@@ -22,7 +22,7 @@ fun ArchivosScreen(
     val listaDeArchivos by userViewModel.files.collectAsState()
     val isLoading by userViewModel.loading.collectAsState()
 
-    // Solo cargamos si loadOnInit es true Y la lista está vacía
+
     LaunchedEffect(Unit) {
         if (loadOnInit && listaDeArchivos.isEmpty()) {
             userViewModel.fetchUploadedFiles()

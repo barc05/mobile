@@ -44,7 +44,6 @@ class UserRepository {
                     put("rol", user.rol)
                 }
             }
-            // Copiar ID de Auth a la tabla de usuarios
             val userId = supabase.auth.currentUserOrNull()?.id
             if (userId != null) {
                 insertUserInPublicTable(user.copy(id = userId))
@@ -58,7 +57,7 @@ class UserRepository {
 
     private suspend fun insertUserInPublicTable(user: User) {
         try {
-            // "usuarios" debe ser el nombre de tu tabla en Supabase
+
             supabase.from("usuarios").insert(user)
         } catch (e: Exception) {
             e.printStackTrace()
@@ -67,7 +66,6 @@ class UserRepository {
 
     fun getCurrentUserId(): String? = supabase.auth.currentUserOrNull()?.id
 
-    // Obtener el objeto User completo desde la base de datos
     suspend fun getCurrentUser(): User? {
         val id = getCurrentUserId() ?: return null
         return try {
@@ -85,8 +83,6 @@ class UserRepository {
     suspend fun logout() {
         supabase.auth.signOut()
     }
-
-    // --- ARCHIVOS (STORAGE) ---
 
     suspend fun uploadFile(context: Context, uri: Uri): String? {
         val currentUser = supabase.auth.currentUserOrNull() ?: return null
@@ -107,8 +103,6 @@ class UserRepository {
         }
     }
 
-    // Agrega esto en UserRepository.kt
-
     suspend fun saveFileRecord(file: UploadedFile): Boolean {
         return try {
             // "archivos" es el nombre de tu tabla en Supabase
@@ -120,7 +114,7 @@ class UserRepository {
         }
     }
 
-    // --- BASE DE DATOS (CONSULTAS) ---
+
 
     suspend fun getFiles(): List<UploadedFile> {
         return try {
@@ -146,8 +140,7 @@ class UserRepository {
     // AGREGA ESTO AL FINAL DE LA CLASE UserRepository
     suspend fun updateUserPhotoUrl(userId: String, url: String) {
         try {
-            // Asegúrate de que la columna en tu Supabase se llame "fotoUri" o "foto_uri"
-            // Aquí asumo que en tu modelo User la llamaste "fotoUri"
+
             supabase.from("usuarios").update({
                 set("fotoUri", url)
             }) {
