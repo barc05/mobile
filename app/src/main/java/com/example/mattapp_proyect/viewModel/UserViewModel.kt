@@ -136,11 +136,32 @@ class UserViewModel : ViewModel() {
     fun addUploadedFile(context: Context, uri: Uri) {
         viewModelScope.launch {
             _loading.value = true
-            val url = repo.uploadFile(context, uri)
-            if (url != null) {
-                fetchUploadedFiles()
+
+            // 1. Subir el archivo físico a la nube
+            val urlGenerada = repo.uploadFile(context, uri)
+
+            if (urlGenerada != null) {
+                // Recuperamos el email del usuario actual
+                val emailUsuario = _loggedInUser.value?.correo ?: "anonimo"
+
+                // 2. Crear el objeto con los datos
+                val nuevoArchivo = UploadedFile(
+                    userEmail = emailUsuario,
+                    nombre = "Archivo Nuevo", // Puedes pasar el nombre real si lo tienes
+                    materia = "General",
+                    url = urlGenerada // Aquí guardamos el link que nos dio Supabase
+                )
+
+                // 3. GUARDAR EN LA BASE DE DATOS (Esto es lo que faltaba)
+                val guardadoExitoso = repo.saveFileRecord(nuevoArchivo)
+
+                if (guardadoExitoso) {
+                    fetchUploadedFiles() // Recargar la lista
+                } else {
+                    _errorMessage.value = "Error al guardar en la base de datos"
+                }
             } else {
-                _errorMessage.value = "Error al subir archivo"
+                _errorMessage.value = "Error al subir archivo al Storage"
             }
             _loading.value = false
         }

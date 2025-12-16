@@ -107,6 +107,19 @@ class UserRepository {
         }
     }
 
+    // Agrega esto en UserRepository.kt
+
+    suspend fun saveFileRecord(file: UploadedFile): Boolean {
+        return try {
+            // "archivos" es el nombre de tu tabla en Supabase
+            supabase.from("archivos").insert(file)
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
     // --- BASE DE DATOS (CONSULTAS) ---
 
     suspend fun getFiles(): List<UploadedFile> {
