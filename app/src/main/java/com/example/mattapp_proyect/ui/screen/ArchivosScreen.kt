@@ -63,7 +63,6 @@ fun ArchivosScreen(
                 items(listaDeArchivos) { archivo ->
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(archivo.nombre, style = MaterialTheme.typography.titleMedium)
-                        Text("Materia: ${archivo.materia}")
                         Divider()
                     }
                 }

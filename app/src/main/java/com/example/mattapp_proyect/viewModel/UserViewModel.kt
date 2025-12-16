@@ -140,18 +140,18 @@ class UserViewModel : ViewModel() {
             val urlGenerada = repo.uploadFile(context, uri)
 
             if (urlGenerada != null) {
-                // Recuperamos el email del usuario actual
-                val emailUsuario = _loggedInUser.value?.correo ?: "anonimo"
+                // CAMBIO CRUCIAL: OBTENEMOS EL ID DEL USUARIO, NO EL CORREO
+                val idUsuario = _loggedInUser.value?.id ?: return@launch // Usamos el ID de User.kt
 
                 // 2. Crear el objeto con los datos
                 val nuevoArchivo = UploadedFile(
-                    correo = emailUsuario,
-                    nombre = "Archivo Nuevo", // Puedes pasar el nombre real si lo tienes
-                    materia = "General",
-                    url = urlGenerada // Aquí guardamos el link que nos dio Supabase
+                    usuario_Id = idUsuario, // <-- USAMOS EL NUEVO NOMBRE y el ID
+                    nombre = "Archivo Nuevo",
+                    // Ya no se incluye 'materia'
+                    url = urlGenerada
                 )
 
-                // 3. GUARDAR EN LA BASE DE DATOS (Esto es lo que faltaba)
+                // 3. GUARDAR EN LA BASE DE DATOS
                 val guardadoExitoso = repo.saveFileRecord(nuevoArchivo)
 
                 if (guardadoExitoso) {
