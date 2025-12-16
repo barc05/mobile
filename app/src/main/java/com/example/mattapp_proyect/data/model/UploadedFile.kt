@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
 data class UploadedFile (
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val userEmail: String, // a qué usuario pertenece
+    val correo: String, // a qué usuario pertenece
     val nombre: String,
     val materia: String,
     val url: String // CAMPO NUEVO

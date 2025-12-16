@@ -2,7 +2,6 @@ package com.example.mattapp_proyect.viewModel
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mattapp_proyect.data.model.HistorialItem
@@ -146,7 +145,7 @@ class UserViewModel : ViewModel() {
 
                 // 2. Crear el objeto con los datos
                 val nuevoArchivo = UploadedFile(
-                    userEmail = emailUsuario,
+                    correo = emailUsuario,
                     nombre = "Archivo Nuevo", // Puedes pasar el nombre real si lo tienes
                     materia = "General",
                     url = urlGenerada // Aquí guardamos el link que nos dio Supabase
