@@ -128,4 +128,22 @@ class UserRepository {
             emptyList()
         }
     }
+
+
+    // AGREGA ESTO AL FINAL DE LA CLASE UserRepository
+    suspend fun updateUserPhotoUrl(userId: String, url: String) {
+        try {
+            // Asegúrate de que la columna en tu Supabase se llame "fotoUri" o "foto_uri"
+            // Aquí asumo que en tu modelo User la llamaste "fotoUri"
+            supabase.from("usuarios").update({
+                set("fotoUri", url)
+            }) {
+                filter {
+                    eq("id", userId)
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
 }

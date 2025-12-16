@@ -158,4 +158,30 @@ class UserViewModel : ViewModel() {
             _loading.value = false
         }
     }
+
+    // ... (dentro de la clase UserViewModel)
+
+    // AGREGA ESTA FUNCIÓN NUEVA
+    fun updateUserProfilePhoto(context: Context, uri: Uri) {
+        viewModelScope.launch {
+            _loading.value = true
+            val currentUser = _loggedInUser.value
+
+            if (currentUser?.id != null) {
+                // 1. Subir la imagen al Storage (reutilizamos tu función existente)
+                val url = repo.uploadFile(context, uri)
+
+                if (url != null) {
+                    // 2. IMPORTANTE: Guardar el link en la tabla de usuarios
+                    repo.updateUserPhotoUrl(currentUser.id, url)
+
+                    // 3. Actualizar la app inmediatamente para que no se borre la foto
+                    _loggedInUser.value = currentUser.copy(fotoUri = url)
+                } else {
+                    _errorMessage.value = "Error al subir la imagen"
+                }
+            }
+            _loading.value = false
+        }
+    }
 }

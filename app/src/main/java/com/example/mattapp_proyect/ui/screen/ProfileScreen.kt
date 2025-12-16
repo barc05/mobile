@@ -85,10 +85,11 @@ fun ProfileScreen(navController: NavController, userViewModel: UserViewModel) {
             // Botón Guardar Foto (CORREGIDO)
             if (imageUri != null) {
                 Button(onClick = {
-                    // Llamada correcta a la función del nuevo ViewModel
-                    userViewModel.addUploadedFile(navController.context, imageUri!!)
-                    // O si implementaste updateUserPhoto específicamente:
-                    // userViewModel.updateUserPhoto(imageUri!!)
+                    // --- CAMBIO AQUÍ ---
+                    // Antes usabas: userViewModel.addUploadedFile(...)
+                    // AHORA USA ESTO:
+                    userViewModel.updateUserProfilePhoto(navController.context, imageUri!!)
+
                     imageUri = null
                 }) {
                     Text("Guardar Foto")
