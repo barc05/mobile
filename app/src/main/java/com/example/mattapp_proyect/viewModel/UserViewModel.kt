@@ -14,16 +14,19 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+// 1. Definir el estado de la UI para Autenticación
 data class AuthUiState(
     val isLoading: Boolean = false,
     val isAuthenticated: Boolean = false,
     val error: String? = null
 )
 
+// 2. Usar ViewModel normal (no AndroidViewModel) ya que Supabase maneja la sesión
 class UserViewModel : ViewModel() {
 
     private val repo = UserRepository()
 
+    // --- Estados para la UI ---
     private val _loggedInUser = MutableStateFlow<User?>(null)
     val loggedInUser: StateFlow<User?> = _loggedInUser.asStateFlow()
 
@@ -39,6 +42,7 @@ class UserViewModel : ViewModel() {
     private val _historial = MutableStateFlow<List<HistorialItem>>(emptyList())
     val historial: StateFlow<List<HistorialItem>> = _historial.asStateFlow()
 
+    // Estado para navegación de Login/Registro
     private val _authState = MutableStateFlow(AuthUiState())
     val authState: StateFlow<AuthUiState> = _authState.asStateFlow()
 
@@ -46,6 +50,7 @@ class UserViewModel : ViewModel() {
         viewModelScope.launch {
             val userId = repo.getCurrentUserId()
             if (userId != null) {
+                // Si hay sesión, intentamos cargar el perfil del usuario
                 val user = repo.getCurrentUser()
                 if (user != null) {
                     _loggedInUser.value = user
@@ -56,15 +61,14 @@ class UserViewModel : ViewModel() {
         }
     }
 
-    // Funciones de Autenticación (Conectadas a Supabase) 
 
     fun loginUsuario(correo: String, pass: String) {
         viewModelScope.launch {
             _loading.value = true
             _errorMessage.value = null
-            
+
             val success = repo.login(correo, pass)
-            
+
             if (success) {
                 val user = repo.getCurrentUser()
                 if (user != null) {
@@ -85,13 +89,12 @@ class UserViewModel : ViewModel() {
         viewModelScope.launch {
             _loading.value = true
             _errorMessage.value = null
+
             val newUser = User(nombre = nombre, correo = correo, rol = rol)
-            
-            // Registramos en Supabase
+
             val success = repo.register(newUser, pass)
-            
+
             if (success) {
-                // Intentamos loguear automáticamente recuperando el usuario
                 val user = repo.getCurrentUser()
                 if (user != null) {
                     _loggedInUser.value = user
@@ -114,7 +117,7 @@ class UserViewModel : ViewModel() {
         }
     }
 
-    //  Funciones de Datos 
+    // Funciones de Datos
 
     fun fetchUploadedFiles() {
         viewModelScope.launch {
@@ -133,10 +136,9 @@ class UserViewModel : ViewModel() {
     fun addUploadedFile(context: Context, uri: Uri) {
         viewModelScope.launch {
             _loading.value = true
-            // Subir archivo a Supabase Storage
             val url = repo.uploadFile(context, uri)
             if (url != null) {
-                fetchUploadedFiles() // Recargar lista si tuvo éxito
+                fetchUploadedFiles()
             } else {
                 _errorMessage.value = "Error al subir archivo"
             }
