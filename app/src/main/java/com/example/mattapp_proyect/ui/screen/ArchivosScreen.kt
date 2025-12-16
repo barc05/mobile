@@ -16,15 +16,17 @@ import com.example.mattapp_proyect.viewModel.UserViewModel
 @Composable
 fun ArchivosScreen(
     navController: NavController,
-    userViewModel: UserViewModel
+    userViewModel: UserViewModel,
+    loadOnInit: Boolean = true
 ) {
-    // Usamos los estados del ViewModel corregido
     val listaDeArchivos by userViewModel.files.collectAsState()
     val isLoading by userViewModel.loading.collectAsState()
 
-    // Cargar archivos al entrar a la pantalla
+    // Solo cargamos si loadOnInit es true Y la lista está vacía
     LaunchedEffect(Unit) {
-        userViewModel.fetchUploadedFiles()
+        if (loadOnInit && listaDeArchivos.isEmpty()) {
+            userViewModel.fetchUploadedFiles()
+        }
     }
 
     Scaffold(
@@ -59,18 +61,10 @@ fun ArchivosScreen(
                 }
 
                 items(listaDeArchivos) { archivo ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        elevation = CardDefaults.cardElevation(4.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            // Usamos solo los campos que existen en Supabase
-                            Text(text = archivo.nombre, style = MaterialTheme.typography.titleMedium)
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(text = "URL: ${archivo.url}", style = MaterialTheme.typography.bodySmall)
-                        }
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(archivo.nombre, style = MaterialTheme.typography.titleMedium)
+                        Text("Materia: ${archivo.materia}")
+                        Divider()
                     }
                 }
             }
